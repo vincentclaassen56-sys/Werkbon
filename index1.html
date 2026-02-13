@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Van Elst Werkbon</title>
+    
+    <link rel="icon" type="image/x-icon" href="Screenshot_20260213_204024_Chrome.jpg">
+    <link rel="apple-touch-icon" href="Screenshot_20260213_204024_Chrome.jpg">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .login-container { max-width: 400px; margin: 100px auto; text-align: center; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .logo-header { text-align: center; margin-bottom: 20px; }
+        .logo-header img { max-width: 200px; height: auto; border-radius: 8px; }
+        .card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        h2 { margin-top: 0; color: #2d4c3b; border-bottom: 2px solid #2d4c3b; padding-bottom: 5px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input, textarea, select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+        input:focus { border-color: #2d4c3b; outline: none; box-shadow: 0 0 5px rgba(45,76,59,0.3); }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .total-box { background: #f0f4f1; padding: 15px; border-radius: 6px; text-align: right; font-size: 1.2em; font-weight: bold; color: #2d4c3b; margin-top: 10px; border: 1px solid #2d4c3b; }
+        .btn-send { background-color: #2d4c3b; color: white; padding: 15px; border: none; border-radius: 8px; cursor: pointer; width: 100%; font-size: 18px; font-weight: bold; transition: background 0.3s; }
+        .btn-send:active { background-color: #1e3328; transform: scale(0.98); }
+        .btn-location { background-color: #6c757d; margin-bottom: 10px; }
+        .customer-header { background-color: #2d4c3b; color: white; padding: 10px; border-radius: 6px 6px 0 0; margin: -15px -15px 15px -15px; }
+        #app-inhoud { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="inlogvak" class="login-container">
+        <div class="logo-header">
+            <img src="Screenshot_20260213_204024_Chrome.jpg" alt="Van Elst Logo">
+        </div>
+        <h2 style="border: none;">Beveiligde Toegang</h2>
+        <input type="password" id="pincode" placeholder="Toegangscode">
+        <button class="btn-send" onclick="checkLogin()">INLOGGEN</button>
+    </div>
+
+    <div id="app-inhoud" class="container">
+        <div class="logo-header">
+            <img src="Screenshot_20260213_204024_Chrome.jpg" alt="Van Elst Logo">
+        </div>
+
+        <div class="card">
+            <h2>Dagoverzicht Medewerker</h2>
+            <label>Naam Medewerker</label>
+            <input type="text" id="medewerker" placeholder="Jouw naam">
+            
+            <div class="grid-3">
+                <div><label>Begin Dag</label><input type="time" id="start_dag"></div>
+                <div><label>Einde Dag</label><input type="time" id="eind_dag"></div>
+                <div><label>Pauze (min)</label><input type="number" id="pauze" value="30"></div>
+            </div>
+            <div class="total-box">Netto gewerkt: <span id="totaal_dag">0:00</span></div>
+        </div>
+
+        <form id="werkbonForm">
+            <div class="card">
+                <div class="customer-header"><h3>Klant & Locatie</h3></div>
+                <label>Klantnaam / Project</label>
+                <input type="text" id="klant" required placeholder="Naam van de klant">
+                
+                <button type="button" class="btn-send btn-location" onclick="getLocation()">📍 Locatie Ophalen</button>
+                <input type="text" id="locatie" placeholder="Adres (wordt hier ingevuld)">
+            </div>
+
+            <div class="card">
+                <h2>Werkzaamheden</h2>
+                <textarea id="omschrijving" rows="4" placeholder="Wat heb je gedaan?"></textarea>
+                
+                <div class="grid-2">
+                    <div><label>Uren op project</label><input type="number" step="0.5" id="uren_project" placeholder="0.0"></div>
+                    <div><label>Kilometers</label><input type="number" id="km" placeholder="0"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Materialen & Opmerkingen</h2>
+                <textarea id="materialen" rows="3" placeholder="Gebruikte materialen (zand, planten, etc.)"></textarea>
+                <label>Extra opmerkingen</label>
+                <textarea id="opmerkingen" rows="2"></textarea>
+            </div>
+
+            <button type="button" class="btn-send" onclick="verstuurBon()">BON VERSTUREN</button>
+        </form>
+    </div>
+
+    <script>
+        function checkLogin() {
+            const pin = document.getElementById('pincode').value;
+            if(pin === '1234') {
+                document.getElementById('inlogvak').style.display = 'none';
+                document.getElementById('app-inhoud').style.display = 'block';
+            } else {
+                alert('Onjuiste code!');
+            }
+        }
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    document.getElementById('locatie').value = `Lat: ${position.coords.latitude}, Lon: ${position.coords.longitude}`;
+                }, () => { alert("Kon locatie niet ophalen."); });
+            }
+        }
+
+        function verstuurBon() {
+            const data = {
+                medewerker: document.getElementById('medewerker').value,
+                klant: document.getElementById('klant').value,
+                uren: document.getElementById('uren_project').value,
+                omschrijving: document.getElementById('omschrijving').value
+            };
+            
+            const mailtoLink = `mailto:info@vanelstlandschapsonderhoud.nl?subject=Werkbon ${data.klant}&body=Medewerker: ${data.medewerker}%0D%0AUren: ${data.uren}%0D%0AWerkzaamheden: ${data.omschrijving}`;
+            window.location.href = mailtoLink;
+        }
+    </script>
+</body>
+</html>

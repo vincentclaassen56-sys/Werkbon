@@ -1,3 +1,4 @@
+</html>
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -20,12 +21,12 @@
         h2 { margin-top: 0; color: #2d4d36; border-bottom: 1px solid #eee; padding-bottom: 10px; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
         label { display: block; margin-top: 12px; font-weight: 600; font-size: 0.85em; color: #444; }
         input, textarea, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; background: #fff; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-        .totaal-box { background: #f0f4f1; padding: 12px; border-radius: 8px; margin-top: 15px; text-align: center; font-weight: bold; color: #2d4d36; border: 1px solid #dce6de; }
         .btn-send { background: #2d4d36; color: white; border: none; padding: 18px; width: 100%; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px; }
         .btn-locatie { background: #6c757d; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 14px; margin-top: 8px; cursor: pointer; width: 100%; font-weight: bold; }
         .klant-header { background: #2d4d36; padding: 5px 15px; border-radius: 20px; font-weight: bold; color: white; margin-bottom: 15px; font-size: 0.9em; display: inline-block; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .totaal-box { background: #f0f4f1; padding: 12px; border-radius: 8px; margin-top: 15px; text-align: center; font-weight: bold; color: #2d4d36; border: 1px solid #dce6de; }
     </style>
 </head>
 <body>
@@ -81,7 +82,7 @@
                 <label>Klantnaam / Project</label><input type="text" id="klant_naam_${i}">
                 <label>Locatie</label><input type="text" id="klant_locatie_${i}">
                 <button class="btn-locatie" onclick="geolocate(${i})">📍 Huidige Locatie Gebruiken</button>
-                <label>Werkzaamheden</label><textarea id="klant_werk_${i}" rows="2" placeholder="Wat heb je gedaan?"></textarea>
+                <label>Werkzaamheden</label><textarea id="klant_werk_${i}" rows="2"></textarea>
                 <div class="grid-3">
                     <div><label>Begintijd</label><input type="time" id="k_start_${i}" onchange="berekenKlantUren(${i})"></div>
                     <div><label>Eindtijd</label><input type="time" id="k_eind_${i}" onchange="berekenKlantUren(${i})"></div>
@@ -90,14 +91,10 @@
                 <div class="totaal-box">Uren op dit project: <span id="totaal_k_${i}">0:00</span></div>
                 <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
                 <div class="grid-2">
-                    <div><label>Machine</label><input type="text" id="machine_${i}" placeholder="Bijv. Kraan"></div>
+                    <div><label>Machine</label><input type="text" id="machine_${i}"></div>
                     <div><label>Wachttijd / Defect</label>
-                        <div style="display:flex;"><input type="number" id="w_tijd_${i}" style="width:55%;"><select id="w_type_${i}" style="width:45%;"><option>Wachten</option><option>Defect</option></select></div>
+                        <div style="display:flex;"><input type="number" id="w_tijd_${i}"><select id="w_type_${i}"><option>Wachten</option><option>Defect</option></select></div>
                     </div>
-                </div>
-                <div class="grid-2">
-                    <div><label>Laden</label><div style="display:flex;"><input type="number" id="l_h_${i}"><select id="l_e_${i}"><option>m3</option><option>Ton</option><option>Stuks</option></select></div></div>
-                    <div><label>Lossen</label><div style="display:flex;"><input type="number" id="lo_h_${i}"><select id="lo_e_${i}"><option>m3</option><option>Ton</option><option>Stuks</option></select></div></div>
                 </div>
             </div>
         `;
@@ -105,15 +102,11 @@
 
     function geolocate(i) {
         if (!navigator.geolocation) return;
-        const target = document.getElementById(`klant_locatie_${i}`);
-        target.value = "Locatie ophalen...";
         navigator.geolocation.getCurrentPosition(async (pos) => {
-            try {
-                const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`);
-                const data = await resp.json();
-                target.value = data.display_name.split(',').slice(0, 3).join(',');
-            } catch { target.value = pos.coords.latitude.toFixed(4) + "," + pos.coords.longitude.toFixed(4); }
-        }, () => { alert("GPS toegang geweigerd."); target.value = ""; });
+            const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`);
+            const data = await resp.json();
+            document.getElementById(`klant_locatie_${i}`).value = data.display_name.split(',').slice(0, 3).join(',');
+        });
     }
 
     function berekenTijd(s, e, p) {
@@ -129,12 +122,11 @@
         for (let i = 1; i <= 5; i++) {
             let n = document.getElementById(`klant_naam_${i}`).value;
             if (n) {
-                klantData += `KLANT ${i}: ${n}\nLocatie: ${document.getElementById(`klant_locatie_${i}`).value}\nWerk: ${document.getElementById(`klant_werk_${i}`).value}\nUren: ${document.getElementById(`totaal_k_${i}`).innerText}\nMachine: ${document.getElementById(`machine_${i}`).value} (${document.getElementById(`w_tijd_${i}`).value || 0}m ${document.getElementById(`w_type_${i}`).value})\nLaden: ${document.getElementById(`l_h_${i}`).value || 0}${document.getElementById(`l_e_${i}`).value} / Lossen: ${document.getElementById(`lo_h_${i}`).value || 0}${document.getElementById(`lo_e_${i}`).value}\n\n`;
+                klantData += `KLANT ${i}: ${n}\nLocatie: ${document.getElementById(`klant_locatie_${i}`).value}\nUren: ${document.getElementById(`totaal_k_${i}`).innerText}\n\n`;
             }
         }
         const med = document.getElementById('medewerker').value;
-        const dagTotaal = document.getElementById('totaalDagUren').innerText;
-        const body = `WERKBON VAN ELST\n\nMedewerker: ${med}\nNetto dagtijd: ${dagTotaal}\n\n${klantData}`;
+        const body = `WERKBON VAN ELST\n\nMedewerker: ${med}\n\n${klantData}`;
         window.location.href = `mailto:info@vanelstlandschapsonderhoud.nl?subject=Werkbon ${med}&body=${encodeURIComponent(body)}`;
     }
 </script>

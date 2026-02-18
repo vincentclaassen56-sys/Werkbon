@@ -228,36 +228,47 @@
         if (!confirm("Controleer je werkbon op onjuistheden voor je deze verzendt!")) return;
 
         const med = document.getElementById('medewerker').value || "Onbekend";
-        let body = "WERKBON LANDSCHAPSONDERHOUD VAN ELST\nMedewerker: " + med + "\nDatum: " + new Date().toLocaleDateString('nl-NL') + "\n";
-        body += "Totaal gewerkt: " + document.getElementById('totaalDagUren').innerText + "\n---------------------------\n\n";
+        let body = "WERKBON LANDSCHAPSONDERHOUD VAN ELST\n";
+        body += "Medewerker: " + med + "\n";
+        body += "Datum: " + new Date().toLocaleDateString('nl-NL') + "\n";
+        body += "Totaal gewerkt: " + document.getElementById('totaalDagUren').innerText + "\n";
+        body += "---------------------------\n\n";
         
         for(let i=1; i<=5; i++) {
             let n = document.getElementById("klant_naam_" + i).value;
             if(n) {
                 body += "KLANT: " + n + "\n";
-                let rh = document.getElementById("r_heen_" + i).value;
-                let rt = document.getElementById("r_terug_" + i).value;
-                if(rh) body += "Reistijd Heen: " + rh + " min\n";
-                if(rt) body += "Reistijd Terug: " + rt + " min\n";
+                body += "WERK: " + document.getElementById("klant_werk_" + i).value + "\n";
                 
                 let m = document.getElementById("klant_mach_" + i).value;
                 if(m) body += "MACHINE: " + m + "\n";
-                body += "WERK: " + document.getElementById("klant_werk_" + i).value + "\n";
-                let lh = document.getElementById("l_h_" + i).value;
-                if(lh) body += "LADEN: " + lh + " " + document.getElementById("l_e_" + i).value + "\n";
-                let loh = document.getElementById("lo_h_" + i).value;
-                if(loh) body += "LOSSEN: " + loh + " " + document.getElementById("lo_e_" + i).value + "\n";
+
+                let rh = document.getElementById("r_heen_" + i).value;
+                if(rh) body += "Reistijd Heen: " + rh + " min\n";
+
+                let rt = document.getElementById("r_terug_" + i).value;
+                if(rt) body += "Reistijd Terug: " + rt + " min\n";
+
                 body += "UREN: " + document.getElementById("totaal_k_" + i).innerText + "\n";
+
                 let w = document.getElementById("w_tijd_" + i).value;
                 if(w > 0) body += "Wacht: " + w + " min (" + document.getElementById("w_type_" + i).value + ")\n";
+
+                let lh = document.getElementById("l_h_" + i).value;
+                if(lh) body += "LADEN: " + lh + " " + document.getElementById("l_e_" + i).value + "\n";
+
+                let loh = document.getElementById("lo_h_" + i).value;
+                if(loh) body += "LOSSEN: " + loh + " " + document.getElementById("lo_e_" + i).value + "\n";
+
                 let mtr = document.getElementById("klant_meting_" + i).value;
                 if(mtr > 0) body += "📏 AFSTAND: " + mtr + " meter\n";
+
                 let loc = document.getElementById("klant_locatie_" + i).value;
                 if(loc) body += "📍 LOCATIE: http://maps.google.com/maps?q=" + loc + "\n";
+                
                 body += "\n---------------------------\n";
             }
         }
-        // Hieronder is de mail nu leeggelaten zodat je zelf de ontvanger kunt kiezen
         window.location.href = "mailto:?subject=Werkbon " + med + "&body=" + encodeURIComponent(body);
     }
 </script>

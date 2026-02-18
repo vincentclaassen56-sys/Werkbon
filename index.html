@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Van Elst Werkbon v57</title>
+    <title>Van Elst Werkbon</title>
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2313/2313136.png">
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2313/2313136.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="icon" href="logo.png">
+    <link rel="manifest" href="manifest.json">
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -18,7 +21,7 @@
         .container { max-width: 650px; margin: auto; display: none; padding-bottom: 100px; }
         .login-container { max-width: 350px; margin: 80px auto; text-align: center; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .logo-header { text-align: center; margin-bottom: 25px; padding: 10px; }
-        .logo-placeholder { font-size: 50px; background: #2d4d36; color: white; width: 90px; height: 90px; line-height: 90px; border-radius: 22px; margin: 0 auto; display: block; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .app-logo { width: 160px; height: auto; margin-bottom: 10px; }
         .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 4px solid #2d4d36; }
         h2 { margin: 0 0 5px 0; color: #2d4d36; font-size: 1.1em; text-transform: uppercase; }
         label { display: block; margin-top: 10px; font-weight: 600; font-size: 0.85em; color: #444; }
@@ -39,13 +42,13 @@
 <body>
 
 <div id="login-box" class="login-container">
-    <div class="logo-header"><span class="logo-placeholder">🚜</span></div>
+    <div class="logo-header"><img src="logo.png" class="app-logo" alt="Van Elst"></div>
     <input type="password" id="pincode" placeholder="Pincode" style="text-align:center;">
     <button class="btn-send" onclick="checkCode()">INLOGGEN</button>
 </div>
 
 <div id="app-content" class="container">
-    <div class="logo-header"><span class="logo-placeholder">🚜</span></div>
+    <div class="logo-header"><img src="logo.png" class="app-logo" alt="Van Elst"></div>
     
     <div class="card">
         <h2>Dagoverzicht</h2>
@@ -225,7 +228,7 @@
         if (!confirm("Controleer je werkbon op onjuistheden voor je deze verzendt!")) return;
 
         const med = document.getElementById('medewerker').value || "Onbekend";
-        let body = "WERKBON\nMedewerker: " + med + "\nDatum: " + new Date().toLocaleDateString('nl-NL') + "\n";
+        let body = "WERKBON LANDSCHAPSONDERHOUD VAN ELST\nMedewerker: " + med + "\nDatum: " + new Date().toLocaleDateString('nl-NL') + "\n";
         body += "Totaal gewerkt: " + document.getElementById('totaalDagUren').innerText + "\n---------------------------\n\n";
         
         for(let i=1; i<=5; i++) {
@@ -250,10 +253,11 @@
                 let mtr = document.getElementById("klant_meting_" + i).value;
                 if(mtr > 0) body += "📏 AFSTAND: " + mtr + " meter\n";
                 let loc = document.getElementById("klant_locatie_" + i).value;
-                if(loc) body += "📍 LOCATIE: https://www.google.com/maps?q=" + loc + "\n";
-                body += "\n";
+                if(loc) body += "📍 LOCATIE: http://maps.google.com/maps?q=" + loc + "\n";
+                body += "\n---------------------------\n";
             }
         }
+        // Hieronder is de mail nu leeggelaten zodat je zelf de ontvanger kunt kiezen
         window.location.href = "mailto:?subject=Werkbon " + med + "&body=" + encodeURIComponent(body);
     }
 </script>

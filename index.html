@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Van Elst Werkbon v118</title>
+    <title>Van Elst Werkbon v119</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -56,7 +56,7 @@
 
 <div id="login-box" class="login-container">
     <img src="logo.png" alt="Logo">
-    <input type="tel" id="pincode" placeholder="Pincode" style="text-align:center;" autocomplete="off">
+    <input type="password" id="pincode" placeholder="Pincode" style="text-align:center;" inputmode="numeric">
     <button class="btn-send" onclick="checkCode()">INLOGGEN</button>
 </div>
 
@@ -314,20 +314,18 @@
 
     function clearAllData() { 
         if(confirm('Weet je zeker dat je alle gegevens wilt wissen voor een nieuwe dag?')) {
-            // WISSEN
             localStorage.removeItem('vanelst_secure_v116'); 
             klantIds = []; klantSessies = {}; photoCounts = {};
             
-            // RESET SCHERM DIRECT
             document.getElementById('klanten-lijst').innerHTML = "";
             document.querySelectorAll('input, textarea').forEach(el => { el.value = ""; el.classList.remove('geldig'); });
+            
+            // Pincode veld expliciet legen
             document.getElementById('pincode').value = "";
             
-            // TERUG NAAR LOGIN
             document.getElementById('app-content').style.display = 'none';
             document.getElementById('login-box').style.display = 'block';
             
-            // VOEG SCHONE START TOE VOOR DE VOLGENDE KEER
             voegKlantBlokToe();
         }
     }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Van Elst Werkbon v116</title>
+    <title>Van Elst Werkbon v118</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -56,7 +56,7 @@
 
 <div id="login-box" class="login-container">
     <img src="logo.png" alt="Logo">
-    <input type="password" id="pincode" placeholder="Pincode" style="text-align:center;">
+    <input type="tel" id="pincode" placeholder="Pincode" style="text-align:center;" autocomplete="off">
     <button class="btn-send" onclick="checkCode()">INLOGGEN</button>
 </div>
 
@@ -88,7 +88,7 @@
     <div class="card">
         <button id="sendBtn" class="btn-send" onclick="verstuurMail()" disabled>📧 WERKBON VERZENDEN</button>
         <button id="printBtn" class="btn-print" onclick="window.print()" disabled>📄 OPSLAAN ALS PDF / PRINTEN</button>
-        <button onclick="if(confirm('Alles wissen?')) clearAllData()" style="background:none; border:none; color:grey; width:100%; margin-top:20px; font-size:11px; cursor:pointer;">Reset alle velden</button>
+        <button onclick="clearAllData()" style="background:none; border:none; color:grey; width:100%; margin-top:20px; font-size:11px; cursor:pointer; text-decoration: underline;">Reset alle velden (nieuwe dag)</button>
     </div>
 </div>
 
@@ -118,7 +118,6 @@
     let locMarkers = [], measMarkers = [], measPoints = [];
     let currentKlantId = 0, currentSessieMeters = 0, mapMode = 'loc';
 
-    // DIRECT LADEN BIJ OPSTARTEN (VOOR DE PINCODE)
     window.onload = function() {
         initMap(); 
         loadAllData();
@@ -129,11 +128,11 @@
             document.getElementById('login-box').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
             
-            // Check datum pas na inloggen
             const vandaag = new Date();
             const datumStr = String(vandaag.getDate()).padStart(2, '0') + "-" + String(vandaag.getMonth() + 1).padStart(2, '0') + "-" + vandaag.getFullYear();
             const dV = document.getElementById('dag_datum');
             if(!dV.value) { dV.value = datumStr; validateText(dV); saveAllData(); }
+            setTimeout(() => { if(map) map.invalidateSize(); }, 500);
         } else { alert("Onjuiste pincode"); }
     }
 
@@ -214,7 +213,7 @@
     function handlePhoto(i) { photoCounts[i]++; updatePhotoText(i); saveAllData(); }
     function updatePhotoText(i) {
         const span = document.getElementById(`txt_photo_${i}`);
-        if(photoCounts[i] > 0) { span.style.display = 'block'; span.innerHTML = `✅ ${photoCounts[i]} foto('s) <button class="reset-small" onclick="resetPhotos(${id})">Wissen</button>`; }
+        if(photoCounts[i] > 0) { span.style.display = 'block'; span.innerHTML = `✅ ${photoCounts[i]} foto('s) <button class="reset-small" onclick="resetPhotos(${i})">Wissen</button>`; }
         else { span.style.display = 'none'; }
     }
     function resetPhotos(i) { photoCounts[i] = 0; updatePhotoText(i); saveAllData(); }
@@ -257,7 +256,8 @@
     function updateDist() {
         let d = 0; for (let i = 0; i < measPoints.length - 1; i++) { d += measPoints[i].distanceTo(measPoints[i+1]); }
         currentSessieMeters = parseFloat(d.toFixed(1));
-        document.getElementById('distLabel').innerText = "Afstand: " + currentSessieMeters + " m";
+        const lbl = document.getElementById('distLabel');
+        if(lbl) lbl.innerText = "Afstand: " + currentSessieMeters + " m";
     }
 
     function setMapMode(m) {
@@ -312,7 +312,25 @@
         calc(); checkVerzendbaarheid();
     }
 
-    function clearAllData() { localStorage.removeItem('vanelst_secure_v116'); location.reload(); }
+    function clearAllData() { 
+        if(confirm('Weet je zeker dat je alle gegevens wilt wissen voor een nieuwe dag?')) {
+            // WISSEN
+            localStorage.removeItem('vanelst_secure_v116'); 
+            klantIds = []; klantSessies = {}; photoCounts = {};
+            
+            // RESET SCHERM DIRECT
+            document.getElementById('klanten-lijst').innerHTML = "";
+            document.querySelectorAll('input, textarea').forEach(el => { el.value = ""; el.classList.remove('geldig'); });
+            document.getElementById('pincode').value = "";
+            
+            // TERUG NAAR LOGIN
+            document.getElementById('app-content').style.display = 'none';
+            document.getElementById('login-box').style.display = 'block';
+            
+            // VOEG SCHONE START TOE VOOR DE VOLGENDE KEER
+            voegKlantBlokToe();
+        }
+    }
 
     function verstuurMail() {
         saveAllData();
@@ -327,10 +345,10 @@
         window.location.href = "mailto:vincent@vanelst.nl?subject=Werkbon " + med + "&body=" + encodeURIComponent(body);
     }
 
-    function clearMapGraphics() { locMarkers.forEach(m => map.removeLayer(m)); locMarkers = []; measMarkers.forEach(m => map.removeLayer(m)); measMarkers = []; measPoints = []; polyline.setLatLngs([]); }
-    function undoLast() { if(mapMode === 'loc' && locMarkers.length > 0) map.removeLayer(locMarkers.pop()); else if(mapMode === 'meas' && measMarkers.length > 0) { map.removeLayer(measMarkers.pop()); measPoints.pop(); polyline.setLatLngs(measPoints); updateDist(); } }
-    function verwijderKlant(id) { if(confirm("Klant wissen?")) { klantIds = klantIds.filter(x => x !== id); document.getElementById(`card_${id}`).remove(); saveAllData(); checkVerzendbaarheid(); } }
-    function verwijderSessie(klantId, si) { klantSessies[klantId].splice(si, 1); updateKlantOverzicht(klantId); saveAllData(); }
+    function clearMapGraphics() { locMarkers.forEach(m => map.removeLayer(m)); locMarkers = []; measMarkers.forEach(m => map.removeLayer(m)); measMarkers = []; measPoints = []; if(polyline) polyline.setLatLngs([]); }
+    function undoLast() { if(mapMode === 'loc' && locMarkers.length > 0) map.removeLayer(locMarkers.pop()); else if(mapMode === 'meas' && measMarkers.length > 0) { map.removeLayer(measMarkers.pop()); measPoints.pop(); if(polyline) polyline.setLatLngs(measPoints); updateDist(); } }
+    function verwijderKlant(id) { if(confirm("Klant wissen?")) { klantIds = klantIds.filter(x => x !== id); const el = document.getElementById(`card_${id}`); if(el) el.remove(); saveAllData(); checkVerzendbaarheid(); } }
+    function verwijderSessie(klantId, si) { if(klantSessies[klantId]) { klantSessies[klantId].splice(si, 1); updateKlantOverzicht(klantId); saveAllData(); } }
 </script>
 </body>
 </html>

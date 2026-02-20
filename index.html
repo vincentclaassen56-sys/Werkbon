@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Van Elst Werkbon v127</title>
+    <title>Van Elst Werkbon v128</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -74,8 +74,8 @@
             <label>Algemene werkzaamheden</label>
             <textarea id="algemene_werk" name="work_general" rows="2" oninput="validateText(this)"></textarea>
             <div class="grid-3">
-                <div><label>Start</label><input type="text" id="dag_start" name="day_start" class="verplicht" placeholder="0:00" oninput="autoFormatTijd(this); calc()" inputmode="numeric"></div>
-                <div><label>Eind</label><input type="text" id="dag_eind" name="day_end" class="verplicht" placeholder="0:00" oninput="autoFormatTijd(this); calc()" inputmode="numeric"></div>
+                <div><label>Start</label><input type="text" id="dag_start" name="day_start" class="verplicht" placeholder="0:00" oninput="autoFormatTijd(this); calc()" inputmode="decimal"></div>
+                <div><label>Eind</label><input type="text" id="dag_eind" name="day_end" class="verplicht" placeholder="0:00" oninput="autoFormatTijd(this); calc()" inputmode="decimal"></div>
                 <div><label>Pauze (m)</label><input type="number" id="dag_pauze" name="day_break" class="verplicht" placeholder="0" oninput="validateNumber(this); calc()"></div>
             </div>
             <div class="totaal-box">Totaal Dagtijd: <span id="totaalDagUren">0:00</span></div>
@@ -151,24 +151,27 @@
     }
 
     function autoFormatTijd(el) {
-        let v = el.value.replace(/\D/g, '').substring(0, 4);
-        // Alleen corrigeren als we minstens 2 cijfers hebben voor uren
-        if (v.length >= 2) {
-            let uren = parseInt(v.substring(0, 2));
-            if (uren > 23) v = '23' + v.substring(2);
-        }
-        // Corrigeren voor minuten als we 4 cijfers hebben
-        if (v.length === 4) {
-            let min = parseInt(v.substring(2, 4));
-            if (min > 59) v = v.substring(0, 2) + '59';
+        // Vervang punt door dubbele punt en verwijder ongeldige tekens
+        let raw = el.value.replace('.', ':');
+        let v = raw.replace(/[^\d:]/g, '');
+        
+        // Haal alleen de cijfers op voor de logica
+        let digits = v.replace(':', '').substring(0, 4);
+        
+        if (digits.length === 1) {
+            el.value = digits;
+        } else if (digits.length === 2) {
+            let uren = parseInt(digits);
+            if (uren > 23) digits = '23';
+            el.value = digits + ':';
+        } else if (digits.length >= 3) {
+            let uren = digits.substring(0, 2);
+            let min = digits.substring(2, 4);
+            if (parseInt(uren) > 23) uren = '23';
+            if (min.length === 2 && parseInt(min) > 59) min = '59';
+            el.value = uren + ':' + min;
         }
 
-        if (v.length > 2) {
-            el.value = v.substring(0, 2) + ':' + v.substring(2, 4);
-        } else {
-            el.value = v;
-        }
-        
         if (el.value.length >= 4) el.classList.add('geldig');
         else el.classList.remove('geldig');
         saveAllData();
@@ -233,8 +236,8 @@
                 <div><label>Reistijd Terug (m)</label><input type="number" id="k_terug_${i}" class="verplicht" oninput="validateNumber(this)"></div>
             </div>
             <div class="grid-3">
-                <div><label>Start Werk</label><input type="text" id="k_start_${i}" class="verplicht" placeholder="0:00" inputmode="numeric" oninput="autoFormatTijd(this); calcK(${i})"></div>
-                <div><label>Eind Werk</label><input type="text" id="k_eind_${i}" class="verplicht" placeholder="0:00" inputmode="numeric" oninput="autoFormatTijd(this); calcK(${i})"></div>
+                <div><label>Start Werk</label><input type="text" id="k_start_${i}" class="verplicht" placeholder="0:00" inputmode="decimal" oninput="autoFormatTijd(this); calcK(${i})"></div>
+                <div><label>Eind Werk</label><input type="text" id="k_eind_${i}" class="verplicht" placeholder="0:00" inputmode="decimal" oninput="autoFormatTijd(this); calcK(${i})"></div>
                 <div><label>Pauze (m)</label><input type="number" id="k_pauze_${i}" class="verplicht" placeholder="0" oninput="validateNumber(this); calcK(${i})"></div>
             </div>
             <div class="grid-2">
@@ -339,11 +342,11 @@
     function saveAllData() {
         const data = { ids: klantIds, sessies: klantSessies };
         document.querySelectorAll('input, textarea, select').forEach(el => { if(el.id && el.id !== 'pincode') data[el.id] = el.value; });
-        localStorage.setItem('vanelst_data_v127', JSON.stringify(data));
+        localStorage.setItem('vanelst_data_v128', JSON.stringify(data));
     }
 
     function loadAllData() {
-        const s = localStorage.getItem('vanelst_data_v127');
+        const s = localStorage.getItem('vanelst_data_v128');
         if(s) {
             const d = JSON.parse(s);
             klantSessies = d.sessies || {};
@@ -357,7 +360,7 @@
         forceRecalcAll();
     }
 
-    function clearAllData() { if(confirm('Alles wissen voor een nieuwe dag?')) { localStorage.removeItem('vanelst_data_v127'); sessionStorage.removeItem('vanelst_auth'); location.reload(); } }
+    function clearAllData() { if(confirm('Alles wissen voor een nieuwe dag?')) { localStorage.removeItem('vanelst_data_v128'); sessionStorage.removeItem('vanelst_auth'); location.reload(); } }
 
     function verstuurMail() {
         saveAllData();

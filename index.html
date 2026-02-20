@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Van Elst Werkbon v111</title>
+    <title>Van Elst Werkbon v113</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -12,7 +12,7 @@
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 10px; color: #333; margin: 0; }
         .container { max-width: 650px; margin: auto; display: none; padding-bottom: 100px; }
         .login-container { max-width: 350px; margin: 80px auto; text-align: center; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .login-container img { max-width: 200px; margin-bottom: 20px; }
+        .login-container img { max-width: 200px; height: auto; margin-bottom: 20px; }
         
         .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 4px solid #2d4d36; position: relative; }
         h2 { margin: 0 0 5px 0; color: #2d4d36; font-size: 1.1em; text-transform: uppercase; }
@@ -65,14 +65,14 @@
 <body oninput="saveAllData(); checkVerzendbaarheid();">
 
 <div id="login-box" class="login-container">
-    <img src="https://www.vanelst.nl/wp-content/uploads/2021/03/Logo-Van-Elst-Logistics-RGB-1.png" alt="Logo">
+    <img src="logo.png" alt="Logo">
     <input type="password" id="pincode" placeholder="Pincode" style="text-align:center;">
     <button class="btn-send" onclick="checkCode()">INLOGGEN</button>
 </div>
 
 <div id="app-content" class="container">
     <div class="print-header">
-        <img src="https://www.vanelst.nl/wp-content/uploads/2021/03/Logo-Van-Elst-Logistics-RGB-1.png" alt="Van Elst Logo">
+        <img src="logo.png" alt="Van Elst Logo">
         <h1>WERKBON</h1>
     </div>
 
@@ -305,7 +305,17 @@
         document.getElementById('distLabel').style.display = m === 'meas' ? 'inline' : 'none';
     }
 
-    function openMap(i) { currentKlantId = i; clearMapGraphics(); currentSessieMeters = 0; document.getElementById('map-overlay').style.display = 'block'; setTimeout(() => map.invalidateSize(), 200); }
+    function openMap(i) { 
+        currentKlantId = i; 
+        clearMapGraphics(); 
+        currentSessieMeters = 0; 
+        document.getElementById('map-overlay').style.display = 'block'; 
+        setTimeout(() => {
+            map.invalidateSize();
+            // Automatisch naar huidige GPS-locatie springen:
+            map.locate({setView: true, maxZoom: 16});
+        }, 200); 
+    }
 
     function closeMap(save) {
         if (save) {
@@ -346,11 +356,11 @@
     function saveAllData() {
         const data = { ids: klantIds, sessies: klantSessies, photos: photoCounts };
         document.querySelectorAll('input, textarea, select').forEach(el => { if(el.id) data[el.id] = el.value; });
-        localStorage.setItem('v111_save', JSON.stringify(data));
+        localStorage.setItem('v113_save', JSON.stringify(data));
     }
 
     function loadAllData() {
-        const s = localStorage.getItem('v111_save');
+        const s = localStorage.getItem('v113_save');
         if(s) {
             const d = JSON.parse(s);
             klantSessies = d.sessies || {};
@@ -413,8 +423,8 @@
                     tM += s.meters;
                     body += "Sessie " + (si+1) + ": " + s.meters + "m\n";
                     s.locaties.forEach((l, li) => { 
-                        // GEOPTIMALISEERDE LINK VOOR LAPTOP EN APP:
-                        body += "  - Locatie " + (li+1) + ": https://www.google.com/maps/search/?api=1&query=" + l.lat + "," + l.lng + "\n"; 
+                        // Universele link voor laptop en telefoon
+                        body += "  - Locatie " + (li+1) + ": https://www.google.com/maps?q=" + l.lat + "," + l.lng + "\n"; 
                     });
                 });
                 body += "Totaal afstand klant: " + tM.toFixed(1) + "m\n";

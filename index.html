@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Van Elst Werkbon v126</title>
+    <title>Van Elst Werkbon v127</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -152,20 +152,24 @@
 
     function autoFormatTijd(el) {
         let v = el.value.replace(/\D/g, '').substring(0, 4);
+        // Alleen corrigeren als we minstens 2 cijfers hebben voor uren
         if (v.length >= 2) {
-            let uren = parseInt(v.substring(0,2));
-            if(uren > 23) v = '23' + v.substring(2);
+            let uren = parseInt(v.substring(0, 2));
+            if (uren > 23) v = '23' + v.substring(2);
         }
-        if (v.length >= 4) {
-            let min = parseInt(v.substring(2,4));
-            if(min > 59) v = v.substring(0,2) + '59';
+        // Corrigeren voor minuten als we 4 cijfers hebben
+        if (v.length === 4) {
+            let min = parseInt(v.substring(2, 4));
+            if (min > 59) v = v.substring(0, 2) + '59';
         }
+
         if (v.length > 2) {
             el.value = v.substring(0, 2) + ':' + v.substring(2, 4);
         } else {
             el.value = v;
         }
-        if (el.value.length >= 5) el.classList.add('geldig');
+        
+        if (el.value.length >= 4) el.classList.add('geldig');
         else el.classList.remove('geldig');
         saveAllData();
         checkVerzendbaarheid();
@@ -335,11 +339,11 @@
     function saveAllData() {
         const data = { ids: klantIds, sessies: klantSessies };
         document.querySelectorAll('input, textarea, select').forEach(el => { if(el.id && el.id !== 'pincode') data[el.id] = el.value; });
-        localStorage.setItem('vanelst_data_v126', JSON.stringify(data));
+        localStorage.setItem('vanelst_data_v127', JSON.stringify(data));
     }
 
     function loadAllData() {
-        const s = localStorage.getItem('vanelst_data_v126');
+        const s = localStorage.getItem('vanelst_data_v127');
         if(s) {
             const d = JSON.parse(s);
             klantSessies = d.sessies || {};
@@ -353,7 +357,7 @@
         forceRecalcAll();
     }
 
-    function clearAllData() { if(confirm('Alles wissen voor een nieuwe dag?')) { localStorage.removeItem('vanelst_data_v126'); sessionStorage.removeItem('vanelst_auth'); location.reload(); } }
+    function clearAllData() { if(confirm('Alles wissen voor een nieuwe dag?')) { localStorage.removeItem('vanelst_data_v127'); sessionStorage.removeItem('vanelst_auth'); location.reload(); } }
 
     function verstuurMail() {
         saveAllData();

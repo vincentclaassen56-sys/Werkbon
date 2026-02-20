@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Van Elst Werkbon v113</title>
+    <title>Van Elst Werkbon v114</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -140,17 +140,23 @@
     }
 
     function initApp() {
+        // Altijd de datum van vandaag invullen bij start
         const vandaag = new Date();
         const dd = String(vandaag.getDate()).padStart(2, '0');
         const mm = String(vandaag.getMonth() + 1).padStart(2, '0');
         const jjjj = vandaag.getFullYear();
-        const datumVeld = document.getElementById('dag_datum');
-        if(!datumVeld.value) {
-            datumVeld.value = `${dd}-${mm}-${jjjj}`;
-            validateText(datumVeld);
-        }
+        const datumStr = `${dd}-${mm}-${jjjj}`;
+        
         initMap(); 
-        loadAllData();
+        loadAllData(); // Eerst laden...
+
+        // Als er na het laden geen datum staat, dan vandaag invullen
+        const datumVeld = document.getElementById('dag_datum');
+        if(!datumVeld.value || datumVeld.value === "") {
+            datumVeld.value = datumStr;
+            validateText(datumVeld);
+            saveAllData();
+        }
     }
 
     function formatTijd(input) {
@@ -162,18 +168,21 @@
                 input.classList.add('geldig');
             }
         } else { input.classList.remove('geldig'); }
+        saveAllData();
         checkVerzendbaarheid();
     }
 
     function validateNumber(el) {
         if (el.value !== "" && el.value !== null) el.classList.add('geldig');
         else el.classList.remove('geldig');
+        saveAllData();
         checkVerzendbaarheid();
     }
 
     function validateText(el) {
         if (el.value.length > 0) el.classList.add('geldig');
         else el.classList.remove('geldig');
+        saveAllData();
         checkVerzendbaarheid();
     }
 
@@ -212,7 +221,7 @@
                 <div><label>Wachttijd (m)</label><input type="number" id="k_wacht_${i}" placeholder="0" oninput="validateNumber(this)"></div>
                 <div>
                     <label>Reden</label>
-                    <select id="k_reden_${i}">
+                    <select id="k_reden_${i}" onchange="saveAllData()">
                         <option value="Wachten">Wachten</option>
                         <option value="Machine kapot">Machine kapot</option>
                         <option value="Anders">Anders</option>
@@ -223,11 +232,11 @@
             <div class="grid-2">
                 <div class="grid-laden">
                     <div><label>Laden</label><input type="text" id="k_laden_${i}" autocomplete="on" oninput="validateText(this)"></div>
-                    <div><label> </label><select id="unit_l_${i}"><option>m3</option><option>ton</option><option>kg</option><option>st</option></select></div>
+                    <div><label> </label><select id="unit_l_${i}" onchange="saveAllData()"><option>m3</option><option>ton</option><option>kg</option><option>st</option></select></div>
                 </div>
                 <div class="grid-laden">
                     <div><label>Lossen</label><input type="text" id="k_lossen_${i}" autocomplete="on" oninput="validateText(this)"></div>
-                    <div><label> </label><select id="unit_lo_${i}"><option>m3</option><option>ton</option><option>kg</option><option>st</option></select></div>
+                    <div><label> </label><select id="unit_lo_${i}" onchange="saveAllData()"><option>m3</option><option>ton</option><option>kg</option><option>st</option></select></div>
                 </div>
             </div>
 
@@ -312,7 +321,6 @@
         document.getElementById('map-overlay').style.display = 'block'; 
         setTimeout(() => {
             map.invalidateSize();
-            // Automatisch naar huidige GPS-locatie springen:
             map.locate({setView: true, maxZoom: 16});
         }, 200); 
     }
@@ -341,8 +349,8 @@
         if(tot) tot.innerHTML = `Totaal: ${tM.toFixed(1)}m | ${tL} locaties`;
     }
 
-    function calc() { document.getElementById('totaalDagUren').innerText = berekenUren('dag_start','dag_eind','dag_pauze'); }
-    function calcK(i) { document.getElementById(`totaal_k_${i}`).innerText = berekenUren(`k_start_${i}`,`k_eind_${i}`,`k_pauze_${i}`); }
+    function calc() { document.getElementById('totaalDagUren').innerText = berekenUren('dag_start','dag_eind','dag_pauze'); saveAllData(); }
+    function calcK(i) { document.getElementById(`totaal_k_${i}`).innerText = berekenUren(`k_start_${i}`,`k_eind_${i}`,`k_pauze_${i}`); saveAllData(); }
     
     function berekenUren(sI, eI, pI) {
         let sVal = document.getElementById(sI).value, eVal = document.getElementById(eI).value;
@@ -356,11 +364,12 @@
     function saveAllData() {
         const data = { ids: klantIds, sessies: klantSessies, photos: photoCounts };
         document.querySelectorAll('input, textarea, select').forEach(el => { if(el.id) data[el.id] = el.value; });
-        localStorage.setItem('v113_save', JSON.stringify(data));
+        localStorage.setItem('v114_save', JSON.stringify(data));
+        console.log("Opgeslagen!");
     }
 
     function loadAllData() {
-        const s = localStorage.getItem('v113_save');
+        const s = localStorage.getItem('v114_save');
         if(s) {
             const d = JSON.parse(s);
             klantSessies = d.sessies || {};
@@ -377,6 +386,7 @@
     function clearAllData() { localStorage.clear(); location.reload(); }
 
     function verstuurMail() {
+        saveAllData(); // Nog een keer opslaan voor de zekerheid
         const med = document.getElementById('medewerker').value || "Onbekend";
         const datum = document.getElementById('dag_datum').value || "-";
         const algWerk = document.getElementById('algemene_werk').value;
@@ -423,7 +433,6 @@
                     tM += s.meters;
                     body += "Sessie " + (si+1) + ": " + s.meters + "m\n";
                     s.locaties.forEach((l, li) => { 
-                        // Universele link voor laptop en telefoon
                         body += "  - Locatie " + (li+1) + ": https://www.google.com/maps?q=" + l.lat + "," + l.lng + "\n"; 
                     });
                 });

@@ -3,15 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Van Elst Werkbon</title>
-
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    
-    <link rel="apple-touch-icon" href="logo.png">
-    <link rel="icon" href="logo.png">
-    <link rel="manifest" href="manifest.json">
+    <title>Van Elst Werkbon v111</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -20,257 +12,424 @@
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 10px; color: #333; margin: 0; }
         .container { max-width: 650px; margin: auto; display: none; padding-bottom: 100px; }
         .login-container { max-width: 350px; margin: 80px auto; text-align: center; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .logo-header { text-align: center; margin-bottom: 25px; padding: 10px; }
-        .app-logo { width: 160px; height: auto; margin-bottom: 10px; }
-        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 4px solid #2d4d36; }
+        .login-container img { max-width: 200px; margin-bottom: 20px; }
+        
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 4px solid #2d4d36; position: relative; }
         h2 { margin: 0 0 5px 0; color: #2d4d36; font-size: 1.1em; text-transform: uppercase; }
         label { display: block; margin-top: 10px; font-weight: 600; font-size: 0.85em; color: #444; }
-        input, textarea, select { width: 100%; padding: 14px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; min-height: 50px; }
-        input.invalid-time { border: 2.5px solid #e74c3c !important; background-color: #fceae9 !important; color: #c0392b; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        input, textarea, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; background: #fff; }
+        
+        .verplicht { background-color: #ffebee; border: 2px solid #ef9a9a; }
+        .geldig { background-color: #e8f5e9 !important; border: 2px solid #81c784 !important; }
+        
+        .btn-close-klant { position: absolute; top: 10px; right: 15px; background: none; border: none; color: #999; font-size: 24px; font-weight: bold; cursor: pointer; padding: 5px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .grid-laden { display: grid; grid-template-columns: 1fr 85px; gap: 8px; }
+        
         .totaal-box { background: #f0f4f1; padding: 12px; border-radius: 8px; margin-top: 15px; text-align: center; font-weight: bold; color: #2d4d36; border: 1px solid #d1dbd3; }
+        .totaal-meting-klant { background: #fffde7; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 14px; border: 1px solid #fbc02d; color: #827717; text-align: center; font-weight: bold; }
+        
         .btn-send { background: #2d4d36; color: white; border: none; padding: 18px; width: 100%; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        .btn-send:disabled, .btn-print:disabled { background: #bdc3c7; cursor: not-allowed; opacity: 0.6; }
+        
+        .btn-print { background: #2980b9; color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-add { background: #27ae60; color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 20px; }
         .btn-map { background: #2d4d36; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 15px; margin-top: 15px; cursor: pointer; width: 100%; font-weight: bold; }
+        .btn-photo { background: #7f8c8d; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 15px; margin-top: 10px; cursor: pointer; width: 100%; font-weight: bold; }
+        
         #map-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; }
         #map { width:100%; height:100%; }
+        .measure-info { position:absolute; top:10px; left:50%; transform:translateX(-50%); background:white; padding:10px; border-radius:15px; font-weight:bold; z-index:1001; text-align: center; width: 90%; }
         .map-controls { position:absolute; bottom:30px; left:10px; right:10px; display:flex; flex-direction:column; gap:10px; z-index:1001; }
-        .map-btn { flex:1; background:#2d4d36; color:white; padding:18px; border-radius:12px; text-align:center; font-weight:bold; cursor:pointer; border:none; font-size:16px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .measure-info { position:absolute; top:20px; left:50%; transform:translateX(-50%); background:white; padding:10px 25px; border-radius:30px; font-weight:bold; z-index:1001; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 2px solid #2d4d36; }
+        .map-btn { flex:1; background:#2d4d36; color:white; padding:18px; border-radius:12px; font-weight:bold; cursor:pointer; border:none; font-size:16px; }
+        
+        .detail-line { display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #eee; padding: 8px; border-radius: 5px; margin-top: 5px; font-size: 13px; }
+        .reset-small { background: none; border: none; color: #e74c3c; font-size: 12px; text-decoration: underline; cursor: pointer; }
+        .photo-preview-text { font-size: 12px; color: #27ae60; margin-top: 5px; font-weight: bold; display: block; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .btn-send, .btn-add, .btn-print, .btn-map, .btn-photo, .btn-close-klant, .reset-small, #login-box, button, input[type="file"] { display: none !important; }
+            .container { display: block !important; padding: 0; max-width: 100%; }
+            .card { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; margin-bottom: 10px; }
+            input, textarea, select { border: none; padding: 5px; background: transparent !important; }
+            .totaal-box { background: #eee !important; border: 1px solid #000; }
+            .print-header { display: block !important; text-align: center; margin-bottom: 20px; }
+            .print-header img { max-width: 250px; }
+        }
+        .print-header { display: none; }
     </style>
 </head>
-<body>
+<body oninput="saveAllData(); checkVerzendbaarheid();">
 
 <div id="login-box" class="login-container">
-    <div class="logo-header"><img src="logo.png" class="app-logo" alt="Van Elst"></div>
+    <img src="https://www.vanelst.nl/wp-content/uploads/2021/03/Logo-Van-Elst-Logistics-RGB-1.png" alt="Logo">
     <input type="password" id="pincode" placeholder="Pincode" style="text-align:center;">
     <button class="btn-send" onclick="checkCode()">INLOGGEN</button>
 </div>
 
 <div id="app-content" class="container">
-    <div class="logo-header"><img src="logo.png" class="app-logo" alt="Van Elst"></div>
-    
+    <div class="print-header">
+        <img src="https://www.vanelst.nl/wp-content/uploads/2021/03/Logo-Van-Elst-Logistics-RGB-1.png" alt="Van Elst Logo">
+        <h1>WERKBON</h1>
+    </div>
+
     <div class="card">
         <h2>Dagoverzicht</h2>
-        <input type="text" id="medewerker" placeholder="Naam medewerker...">
+        <label>Datum</label>
+        <input type="text" id="dag_datum" class="verplicht" placeholder="dd-mm-jjjj" oninput="validateText(this)">
+        
+        <label>Medewerker</label>
+        <input type="text" id="medewerker" class="verplicht" placeholder="Naam medewerker..." autocomplete="name" oninput="validateText(this)">
+        
+        <label>Algemene werkzaamheden (onderhoud/eigen bedrijf)</label>
+        <textarea id="algemene_werk" rows="2" autocomplete="on" oninput="validateText(this)"></textarea>
+        
         <div class="grid-3">
-            <div><label>Start</label><input type="text" id="dag_start" inputmode="numeric" placeholder="0:00" oninput="formatTijd(this); calc()"></div>
-            <div><label>Eind</label><input type="text" id="dag_eind" inputmode="numeric" placeholder="0:00" oninput="formatTijd(this); calc()"></div>
-            <div><label>Pauze (m)</label><input type="number" id="dag_pauze" placeholder="" oninput="calc()"></div>
+            <div><label>Start</label><input type="text" id="dag_start" class="verplicht" placeholder="0:00" oninput="formatTijd(this); calc()"></div>
+            <div><label>Eind</label><input type="text" id="dag_eind" class="verplicht" placeholder="0:00" oninput="formatTijd(this); calc()"></div>
+            <div><label>Pauze (m)</label><input type="number" id="dag_pauze" class="verplicht" placeholder="0" oninput="validateNumber(this); calc()"></div>
         </div>
         <div class="totaal-box">Totaal Dagtijd: <span id="totaalDagUren">0:00</span></div>
     </div>
 
-    <div id="klanten-container"></div>
+    <div id="klanten-lijst"></div>
+    <button class="btn-add" onclick="voegKlantBlokToe()">➕ VOLGENDE KLANT TOEVOEGEN</button>
 
     <div class="card">
-        <button class="btn-send" onclick="verstuurMail()">📧 WERKBON VERZENDEN</button>
+        <button id="sendBtn" class="btn-send" onclick="verstuurMail()" disabled>📧 WERKBON VERZENDEN</button>
+        <button id="printBtn" class="btn-print" onclick="window.print()" disabled>📄 OPSLAAN ALS PDF / PRINTEN</button>
+        <button onclick="if(confirm('Alles wissen?')) clearAllData()" style="background:none; border:none; color:grey; width:100%; margin-top:20px; font-size:11px; cursor:pointer;">Reset alle velden</button>
     </div>
 </div>
 
 <div id="map-overlay">
-    <div class="measure-info" id="distLabel">Afstand: 0.0 m</div>
+    <div class="measure-info">
+        <div style="display:flex; gap:5px; margin-bottom:5px;">
+            <button id="btn-mode-loc" class="map-btn" style="padding:10px; font-size:12px;" onclick="setMapMode('loc')">📍 PIONNEN</button>
+            <button id="btn-mode-meas" class="map-btn" style="padding:10px; font-size:12px; background:#777;" onclick="setMapMode('meas')">📏 METEN</button>
+        </div>
+        <span id="distLabel" style="display:none; color:#e67e22;">Afstand: 0.0 m</span>
+    </div>
     <div id="map"></div>
     <div class="map-controls">
-        <button class="map-btn" onclick="clearMeasure()" style="background:#c0392b;">🧹 METING WISSEN</button>
-        <button class="map-btn" onclick="closeMap()">✅ OPSLAAN & SLUITEN</button>
+        <button class="map-btn" style="background:#f39c12;" onclick="undoLast()">↩️ STAP TERUG</button>
+        <div style="display:flex; gap:10px;">
+            <button class="map-btn" style="background:#7f8c8d;" onclick="closeMap(false)">✖️ TERUG</button>
+            <button class="map-btn" onclick="closeMap(true)">✅ OPSLAAN</button>
+        </div>
     </div>
 </div>
 
 <script>
-    let currentKlantIndex = 0;
-    let map, marker, polyline, tempCircles = [];
-    let measurePoints = [];
-    let currentDistance = 0;
+    let klantIds = [];
+    let klantSessies = {}; 
+    let photoCounts = {};
+    let map, polyline;
+    let locMarkers = [], measMarkers = [], measPoints = [];
+    let currentKlantId = 0, currentSessieMeters = 0, mapMode = 'loc';
 
     function checkCode() {
         if (document.getElementById('pincode').value === "1234") {
             document.getElementById('login-box').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
-            initMap();
+            initApp();
         } else { alert("Onjuiste pincode"); }
     }
 
-    function formatTijd(input) {
-        let val = input.value.replace(/[^0-9]/g, ''); 
-        if (val.length >= 1) {
-            if (val.length >= 3) {
-                let u = parseInt(val.slice(0, -2));
-                let m = parseInt(val.slice(-2));
-                input.value = val.slice(0, -2) + ":" + val.slice(-2);
-                if (u > 23 || m > 59) { input.classList.add('invalid-time'); } 
-                else { input.classList.remove('invalid-time'); }
-            } else {
-                if (parseInt(val) > 23 && val.length === 2) { input.classList.add('invalid-time'); }
-                else { input.classList.remove('invalid-time'); }
-                input.value = val;
-            }
-        } else {
-            input.value = "";
-            input.classList.remove('invalid-time');
+    function initApp() {
+        const vandaag = new Date();
+        const dd = String(vandaag.getDate()).padStart(2, '0');
+        const mm = String(vandaag.getMonth() + 1).padStart(2, '0');
+        const jjjj = vandaag.getFullYear();
+        const datumVeld = document.getElementById('dag_datum');
+        if(!datumVeld.value) {
+            datumVeld.value = `${dd}-${mm}-${jjjj}`;
+            validateText(datumVeld);
         }
+        initMap(); 
+        loadAllData();
     }
 
-    const container = document.getElementById('klanten-container');
-    for (let i = 1; i <= 5; i++) {
-        container.innerHTML += `
-            <div class="card">
-                <h2>KLANT ${i}</h2>
-                <label>Klantnaam</label><input type="text" id="klant_naam_${i}">
-                <label>Machine / Kenteken</label><input type="text" id="klant_mach_${i}">
-                <label>Werkzaamheden</label><textarea id="klant_werk_${i}" rows="2"></textarea>
-                
-                <div class="grid-2">
-                    <div><label>Reistijd Heen (m)</label><input type="number" id="r_heen_${i}" placeholder="min"></div>
-                    <div><label>Reistijd Terug (m)</label><input type="number" id="r_terug_${i}" placeholder="min"></div>
-                </div>
+    function formatTijd(input) {
+        let val = input.value.replace(/[^0-9]/g, '');
+        if (val.length >= 3) {
+            let u = parseInt(val.slice(0, -2)), m = parseInt(val.slice(-2));
+            if (u <= 23 && m <= 59) {
+                input.value = u + ":" + (m < 10 ? '0' + m : m);
+                input.classList.add('geldig');
+            }
+        } else { input.classList.remove('geldig'); }
+        checkVerzendbaarheid();
+    }
 
-                <div class="grid-3">
-                    <div><label>Start Werk</label><input type="text" id="k_start_${i}" inputmode="numeric" placeholder="0:00" oninput="formatTijd(this); calcK(${i})"></div>
-                    <div><label>Eind Werk</label><input type="text" id="k_eind_${i}" inputmode="numeric" placeholder="0:00" oninput="formatTijd(this); calcK(${i})"></div>
-                    <div><label>Pauze (m)</label><input type="number" id="k_pauze_${i}" oninput="calcK(${i})"></div>
-                </div>
+    function validateNumber(el) {
+        if (el.value !== "" && el.value !== null) el.classList.add('geldig');
+        else el.classList.remove('geldig');
+        checkVerzendbaarheid();
+    }
 
-                <div class="grid-2">
-                    <div><label>Wachttijd (m)</label><input type="number" id="w_tijd_${i}"></div>
-                    <div><label>Reden</label><select id="w_type_${i}"><option>Wachten</option><option>Defect</option><option>Anders</option></select></div>
+    function validateText(el) {
+        if (el.value.length > 0) el.classList.add('geldig');
+        else el.classList.remove('geldig');
+        checkVerzendbaarheid();
+    }
+
+    function voegKlantBlokToe() {
+        const i = Date.now();
+        if(!klantIds.includes(i)) {
+            klantIds.push(i);
+            klantSessies[i] = [];
+            photoCounts[i] = 0;
+        }
+        
+        const container = document.getElementById('klanten-lijst');
+        const blok = document.createElement('div');
+        blok.className = 'card';
+        blok.id = `card_${i}`;
+        blok.innerHTML = `
+            <button class="btn-close-klant" onclick="verwijderKlant(${i})">×</button>
+            <h2>KLANT ${klantIds.indexOf(i) + 1}</h2>
+            
+            <label>Klantnaam</label><input type="text" id="klant_naam_${i}" autocomplete="organization" oninput="validateText(this)">
+            <label>Machine / Kenteken</label><input type="text" id="klant_machine_${i}" autocomplete="on" oninput="validateText(this)">
+            <label>Werkzaamheden</label><textarea id="klant_werk_${i}" rows="2" autocomplete="on" oninput="validateText(this)"></textarea>
+            
+            <div class="grid-2">
+                <div><label>Reistijd Heen (m)</label><input type="number" id="k_heen_${i}" class="verplicht" placeholder="min" oninput="validateNumber(this)"></div>
+                <div><label>Reistijd Terug (m)</label><input type="number" id="k_terug_${i}" class="verplicht" placeholder="min" oninput="validateNumber(this)"></div>
+            </div>
+
+            <div class="grid-3">
+                <div><label>Start Werk</label><input type="text" id="k_start_${i}" class="verplicht" placeholder="0:00" oninput="formatTijd(this); calcK(${i})"></div>
+                <div><label>Eind Werk</label><input type="text" id="k_eind_${i}" class="verplicht" placeholder="0:00" oninput="formatTijd(this); calcK(${i})"></div>
+                <div><label>Pauze (m)</label><input type="number" id="k_pauze_${i}" class="verplicht" placeholder="0" oninput="validateNumber(this); calcK(${i})"></div>
+            </div>
+
+            <div class="grid-2">
+                <div><label>Wachttijd (m)</label><input type="number" id="k_wacht_${i}" placeholder="0" oninput="validateNumber(this)"></div>
+                <div>
+                    <label>Reden</label>
+                    <select id="k_reden_${i}">
+                        <option value="Wachten">Wachten</option>
+                        <option value="Machine kapot">Machine kapot</option>
+                        <option value="Anders">Anders</option>
+                    </select>
                 </div>
-                <div class="grid-2">
-                    <div><label>Laden</label><div style="display:flex;"><input type="text" id="l_h_${i}"><select id="l_e_${i}"><option>m3</option><option>Ton</option><option>kg</option></select></div></div>
-                    <div><label>Lossen</label><div style="display:flex;"><input type="text" id="lo_h_${i}"><select id="lo_e_${i}"><option>m3</option><option>Ton</option><option>kg</option></select></div></div>
+            </div>
+
+            <div class="grid-2">
+                <div class="grid-laden">
+                    <div><label>Laden</label><input type="text" id="k_laden_${i}" autocomplete="on" oninput="validateText(this)"></div>
+                    <div><label> </label><select id="unit_l_${i}"><option>m3</option><option>ton</option><option>kg</option><option>st</option></select></div>
                 </div>
-                <input type="hidden" id="klant_locatie_${i}">
-                <input type="hidden" id="klant_meting_${i}" value="0">
-                <button class="btn-map" onclick="openMap(${i})">🛰️ KAART & AFSTAND METEN</button>
-                <div class="totaal-box">Uren Klant ${i}: <span id="totaal_k_${i}">0:00</span></div>
-            </div>`;
+                <div class="grid-laden">
+                    <div><label>Lossen</label><input type="text" id="k_lossen_${i}" autocomplete="on" oninput="validateText(this)"></div>
+                    <div><label> </label><select id="unit_lo_${i}"><option>m3</option><option>ton</option><option>kg</option><option>st</option></select></div>
+                </div>
+            </div>
+
+            <button class="btn-map" onclick="openMap(${i})">📍 NIEUWE LOCATIE/AFSTAND</button>
+            <div id="loc_list_${i}" style="margin-top:10px;"></div>
+            <div id="klant_totaal_meting_${i}" class="totaal-meting-klant">Totaal: 0.0m | 0 locaties</div>
+
+            <button class="btn-photo" onclick="document.getElementById('file_${i}').click()">📸 FOTO MAKEN (GALERIJ)</button>
+            <input type="file" id="file_${i}" accept="image/*" capture="environment" style="display:none;" onchange="handlePhoto(${i})">
+            <span id="txt_photo_${i}" class="photo-preview-text" style="display:none;"></span>
+
+            <div class="totaal-box">Uren Klant: <span id="totaal_k_${i}">0:00</span></div>
+        `;
+        container.appendChild(blok);
+        updateKlantOverzicht(i);
+        saveAllData(); checkVerzendbaarheid();
+    }
+
+    function handlePhoto(i) { photoCounts[i]++; updatePhotoText(i); saveAllData(); }
+    function updatePhotoText(i) {
+        const span = document.getElementById(`txt_photo_${i}`);
+        if(photoCounts[i] > 0) {
+            span.style.display = 'block';
+            span.innerHTML = `✅ ${photoCounts[i]} foto('s) <button class="reset-small" onclick="resetPhotos(${i})">Wissen</button>`;
+        } else { span.style.display = 'none'; }
+    }
+    function resetPhotos(i) { photoCounts[i] = 0; updatePhotoText(i); saveAllData(); }
+
+    function checkVerzendbaarheid() {
+        const medOk = document.getElementById('medewerker').classList.contains('geldig');
+        const datOk = document.getElementById('dag_datum').classList.contains('geldig');
+        const dS = document.getElementById('dag_start').classList.contains('geldig');
+        const dE = document.getElementById('dag_eind').classList.contains('geldig');
+        const dP = document.getElementById('dag_pauze').classList.contains('geldig');
+        let allKlantOk = true;
+        klantIds.forEach(id => {
+            const fields = [`k_start_${id}`, `k_eind_${id}`, `k_pauze_${id}`, `k_heen_${id}`, `k_terug_${id}`];
+            fields.forEach(f => { const el = document.getElementById(f); if(!el || !el.classList.contains('geldig')) allKlantOk = false; });
+        });
+        const isGereed = (medOk && datOk && dS && dE && dP && allKlantOk);
+        document.getElementById('sendBtn').disabled = !isGereed;
+        document.getElementById('printBtn').disabled = !isGereed;
     }
 
     function initMap() {
         map = L.map('map', {zoomControl: false}).setView([51.712, 5.869], 13);
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
-        marker = L.marker([51.712, 5.869], {draggable: true}).addTo(map);
-        polyline = L.polyline([], {color: '#f39c12', weight: 4}).addTo(map);
-        map.on('click', function(e) {
-            measurePoints.push(e.latlng);
-            polyline.setLatLngs(measurePoints);
-            tempCircles.push(L.circleMarker(e.latlng, {radius: 6, color: '#f39c12', fillColor:'#fff', fillOpacity: 1}).addTo(map));
-            updateDist();
-        });
+        L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3'] }).addTo(map);
+        polyline = L.polyline([], {color: '#e67e22', weight: 4}).addTo(map);
+        map.on('click', (e) => { mapMode === 'loc' ? createLocMarker(e.latlng) : createMeasMarker(e.latlng); });
     }
 
-    function clearMeasure() {
-        measurePoints = []; polyline.setLatLngs([]);
-        tempCircles.forEach(c => map.removeLayer(c));
-        tempCircles = []; currentDistance = 0;
-        document.getElementById('distLabel').innerHTML = "Afstand: 0.0 m";
+    function createLocMarker(latlng) {
+        let m = L.marker(latlng, {draggable: true}).addTo(map);
+        m.on('click', (e) => { L.DomEvent.stopPropagation(e); map.removeLayer(m); locMarkers = locMarkers.filter(x => x !== m); });
+        locMarkers.push(m);
+    }
+
+    function createMeasMarker(latlng) {
+        measPoints.push(latlng);
+        let m = L.circleMarker(latlng, {radius: 6, color: '#e67e22', fillColor: 'white', fillOpacity: 1, weight: 2}).addTo(map);
+        measMarkers.push(m); polyline.setLatLngs(measPoints); updateDist();
     }
 
     function updateDist() {
         let d = 0;
-        for (let i = 0; i < measurePoints.length - 1; i++) { d += measurePoints[i].distanceTo(measurePoints[i+1]); }
-        currentDistance = d.toFixed(1);
-        document.getElementById('distLabel').innerHTML = "Afstand: " + currentDistance + " m";
+        for (let i = 0; i < measPoints.length - 1; i++) { d += measPoints[i].distanceTo(measPoints[i+1]); }
+        currentSessieMeters = parseFloat(d.toFixed(1));
+        document.getElementById('distLabel').innerText = "Afstand: " + currentSessieMeters + " m";
     }
 
-    function openMap(i) {
-        currentKlantIndex = i;
-        document.getElementById('map-overlay').style.display = 'block';
-        setTimeout(() => { 
-            map.invalidateSize();
-            let savedLoc = document.getElementById("klant_locatie_" + i).value;
-            if(savedLoc) {
-                let p = savedLoc.split(',');
-                let ll = [parseFloat(p[0]), parseFloat(p[1])];
-                map.setView(ll, 19); marker.setLatLng(ll);
-            } else {
-                navigator.geolocation.getCurrentPosition((pos) => {
-                    let ll = [pos.coords.latitude, pos.coords.longitude];
-                    map.setView(ll, 19); marker.setLatLng(ll);
-                }, null, {enableHighAccuracy: true});
-            }
-        }, 300);
+    function setMapMode(m) {
+        mapMode = m;
+        document.getElementById('btn-mode-loc').style.background = m === 'loc' ? '#2d4d36' : '#777';
+        document.getElementById('btn-mode-meas').style.background = m === 'meas' ? '#2d4d36' : '#777';
+        document.getElementById('distLabel').style.display = m === 'meas' ? 'inline' : 'none';
     }
 
-    function closeMap() {
-        const pos = marker.getLatLng();
-        document.getElementById("klant_locatie_" + currentKlantIndex).value = pos.lat.toFixed(7) + "," + pos.lng.toFixed(7);
-        document.getElementById("klant_meting_" + currentKlantIndex).value = currentDistance;
+    function openMap(i) { currentKlantId = i; clearMapGraphics(); currentSessieMeters = 0; document.getElementById('map-overlay').style.display = 'block'; setTimeout(() => map.invalidateSize(), 200); }
+
+    function closeMap(save) {
+        if (save) {
+            if(!klantSessies[currentKlantId]) klantSessies[currentKlantId] = [];
+            klantSessies[currentKlantId].push({ meters: currentSessieMeters, locaties: locMarkers.map(m => m.getLatLng()) });
+            updateKlantOverzicht(currentKlantId);
+            saveAllData();
+        }
         document.getElementById('map-overlay').style.display = 'none';
-        clearMeasure();
     }
 
-    function parseTijd(t) {
-        if (!t || !t.includes(':')) return null;
-        let p = t.split(':');
-        let h = parseInt(p[0]); let m = parseInt(p[1]);
-        if (h > 23 || m > 59) return null;
-        return (h * 60) + m;
+    function updateKlantOverzicht(id) {
+        let html = "", tM = 0, tL = 0;
+        if(klantSessies[id]) {
+            klantSessies[id].forEach((s, idx) => {
+                tM += s.meters; tL += s.locaties.length;
+                html += `<div class="detail-line"><span>Sessie ${idx+1}: ${s.meters}m / ${s.locaties.length} loc</span><button class="reset-small" onclick="verwijderSessie(${id}, ${idx})">Wis</button></div>`;
+            });
+        }
+        const el = document.getElementById(`loc_list_${id}`);
+        const tot = document.getElementById(`klant_totaal_meting_${id}`);
+        if(el) el.innerHTML = html;
+        if(tot) tot.innerHTML = `Totaal: ${tM.toFixed(1)}m | ${tL} locaties`;
     }
 
-    function bereken(sId, eId, pId) {
-        let s = parseTijd(document.getElementById(sId).value);
-        let e = parseTijd(document.getElementById(eId).value);
-        let p = parseInt(document.getElementById(pId).value) || 0;
-        if (s === null || e === null) return "Check tijd!";
-        let t = e - s - p;
-        if (t < 0) return "Check tijd!";
-        return Math.floor(t/60) + ":" + (t%60 < 10 ? '0' : '') + (t%60);
-    }
+    function calc() { document.getElementById('totaalDagUren').innerText = berekenUren('dag_start','dag_eind','dag_pauze'); }
+    function calcK(i) { document.getElementById(`totaal_k_${i}`).innerText = berekenUren(`k_start_${i}`,`k_eind_${i}`,`k_pauze_${i}`); }
     
-    function calc() { document.getElementById('totaalDagUren').innerText = bereken('dag_start', 'dag_eind', 'dag_pauze'); }
-    function calcK(i) { document.getElementById("totaal_k_" + i).innerText = bereken("k_start_" + i, "k_eind_" + i, "k_pauze_" + i); }
+    function berekenUren(sI, eI, pI) {
+        let sVal = document.getElementById(sI).value, eVal = document.getElementById(eI).value;
+        let s = sVal.split(':'), e = eVal.split(':');
+        let p = parseInt(document.getElementById(pI).value) || 0;
+        if(s.length<2 || e.length<2) return "0:00";
+        let t = (parseInt(e[0])*60 + parseInt(e[1])) - (parseInt(s[0])*60 + parseInt(s[1])) - p;
+        return t<=0 ? "0:00" : Math.floor(t/60) + ":" + (t%60<10?'0':'') + (t%60);
+    }
+
+    function saveAllData() {
+        const data = { ids: klantIds, sessies: klantSessies, photos: photoCounts };
+        document.querySelectorAll('input, textarea, select').forEach(el => { if(el.id) data[el.id] = el.value; });
+        localStorage.setItem('v111_save', JSON.stringify(data));
+    }
+
+    function loadAllData() {
+        const s = localStorage.getItem('v111_save');
+        if(s) {
+            const d = JSON.parse(s);
+            klantSessies = d.sessies || {};
+            photoCounts = d.photos || {};
+            if(d.ids) d.ids.forEach(id => { voegKlantBlokToe(); updatePhotoText(id); });
+            for(let key in d) { 
+                let el = document.getElementById(key); 
+                if(el) { el.value = d[key]; if(el.value.length > 0) el.classList.add('geldig'); }
+            }
+        } else { voegKlantBlokToe(); }
+        calc(); checkVerzendbaarheid();
+    }
+
+    function clearAllData() { localStorage.clear(); location.reload(); }
 
     function verstuurMail() {
-        if (document.querySelectorAll('.invalid-time').length > 0) {
-            alert("Er staan nog foutieve tijden in de bon. Corrigeer de rode vakken!"); return;
-        }
-        if (!confirm("Controleer je werkbon op onjuistheden voor je deze verzendt!")) return;
-
         const med = document.getElementById('medewerker').value || "Onbekend";
-        let body = "WERKBON LANDSCHAPSONDERHOUD VAN ELST\n";
-        body += "Medewerker: " + med + "\n";
-        body += "Datum: " + new Date().toLocaleDateString('nl-NL') + "\n";
-        body += "Totaal gewerkt: " + document.getElementById('totaalDagUren').innerText + "\n";
-        body += "---------------------------\n\n";
-        
-        for(let i=1; i<=5; i++) {
-            let n = document.getElementById("klant_naam_" + i).value;
-            if(n) {
-                body += "KLANT: " + n + "\n";
-                body += "WERK: " + document.getElementById("klant_werk_" + i).value + "\n";
-                
-                let m = document.getElementById("klant_mach_" + i).value;
-                if(m) body += "MACHINE: " + m + "\n";
+        const datum = document.getElementById('dag_datum').value || "-";
+        const algWerk = document.getElementById('algemene_werk').value;
+        let hasPhotos = false;
+        klantIds.forEach(id => { if(photoCounts[id] > 0) hasPhotos = true; });
 
-                let rh = document.getElementById("r_heen_" + i).value;
-                if(rh) body += "Reistijd Heen: " + rh + " min\n";
-
-                let rt = document.getElementById("r_terug_" + i).value;
-                if(rt) body += "Reistijd Terug: " + rt + " min\n";
-
-                body += "UREN: " + document.getElementById("totaal_k_" + i).innerText + "\n";
-
-                let w = document.getElementById("w_tijd_" + i).value;
-                if(w > 0) body += "Wacht: " + w + " min (" + document.getElementById("w_type_" + i).value + ")\n";
-
-                let lh = document.getElementById("l_h_" + i).value;
-                if(lh) body += "LADEN: " + lh + " " + document.getElementById("l_e_" + i).value + "\n";
-
-                let loh = document.getElementById("lo_h_" + i).value;
-                if(loh) body += "LOSSEN: " + loh + " " + document.getElementById("lo_e_" + i).value + "\n";
-
-                let mtr = document.getElementById("klant_meting_" + i).value;
-                if(mtr > 0) body += "📏 AFSTAND: " + mtr + " meter\n";
-
-                let loc = document.getElementById("klant_locatie_" + i).value;
-                if(loc) body += "📍 LOCATIE: http://maps.google.com/maps?q=" + loc + "\n";
-                
-                body += "\n---------------------------\n";
-            }
+        let body = "WERKBON VAN ELST\n";
+        body += "==============================\n";
+        if(hasPhotos) {
+            body += "!! VERGEET NIET DE FOTO'S BIJ TE VOEGEN (PAPERCLIP) !!\n";
+            body += "==============================\n";
         }
-        window.location.href = "mailto:?subject=Werkbon " + med + "&body=" + encodeURIComponent(body);
+        body += "Medewerker: " + med + "\n";
+        body += "Datum: " + datum + "\n";
+        if(algWerk) body += "Eigen werkzaamheden: " + algWerk + "\n";
+        body += "Netto Dagtijd: " + document.getElementById('totaalDagUren').innerText + "\n";
+        body += "==============================\n\n";
+
+        klantIds.forEach((id, index) => {
+            const naam = document.getElementById("klant_naam_" + id).value || "-";
+            const machine = document.getElementById("klant_machine_" + id).value;
+            const werk = document.getElementById("klant_werk_" + id).value;
+            const wacht = document.getElementById("k_wacht_" + id).value;
+            const laden = document.getElementById("k_laden_" + id).value;
+            const lossen = document.getElementById("k_lossen_" + id).value;
+
+            body += "KLANT " + (index + 1) + "\n";
+            body += "------------------------------\n";
+            body += "Naam: " + naam + "\n";
+            if(machine) body += "Machine/Kenteken: " + machine + "\n";
+            if(werk) body += "Werk: " + werk + "\n";
+            body += "Netto Uren: " + document.getElementById("totaal_k_" + id).innerText + "\n";
+            body += "Reistijd: Heen " + (document.getElementById("k_heen_" + id).value || "0") + "m / Terug " + (document.getElementById("k_terug_" + id).value || "0") + "m\n";
+            
+            if(wacht && wacht != "0" && wacht != "") body += "Wachttijd: " + wacht + "m Reden: " + document.getElementById("k_reden_" + id).value + "\n";
+            if(laden && laden != "") body += "Laden: " + laden + " " + document.getElementById("unit_l_" + id).value + "\n";
+            if(lossen && lossen != "") body += "Lossen: " + lossen + " " + document.getElementById("unit_lo_" + id).value + "\n";
+            if(photoCounts[id] > 0) body += "Foto's: " + photoCounts[id] + " (VOEG NU TOE ALS BIJLAGE)\n";
+            
+            let tM = 0;
+            if(klantSessies[id] && klantSessies[id].length > 0) {
+                body += "\nLOCATIES & AFSTANDEN:\n";
+                klantSessies[id].forEach((s, si) => {
+                    tM += s.meters;
+                    body += "Sessie " + (si+1) + ": " + s.meters + "m\n";
+                    s.locaties.forEach((l, li) => { 
+                        // GEOPTIMALISEERDE LINK VOOR LAPTOP EN APP:
+                        body += "  - Locatie " + (li+1) + ": https://www.google.com/maps/search/?api=1&query=" + l.lat + "," + l.lng + "\n"; 
+                    });
+                });
+                body += "Totaal afstand klant: " + tM.toFixed(1) + "m\n";
+            }
+            body += "------------------------------\n\n";
+        });
+
+        const subject = "Werkbon " + med + " (" + datum + ")";
+        window.location.href = "mailto:vincent@vanelst.nl?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
     }
+
+    function clearMapGraphics() { locMarkers.forEach(m => map.removeLayer(m)); locMarkers = []; measMarkers.forEach(m => map.removeLayer(m)); measMarkers = []; measPoints = []; polyline.setLatLngs([]); }
+    function undoLast() { if(mapMode === 'loc' && locMarkers.length > 0) map.removeLayer(locMarkers.pop()); else if(mapMode === 'meas' && measMarkers.length > 0) { map.removeLayer(measMarkers.pop()); measPoints.pop(); polyline.setLatLngs(measPoints); updateDist(); } }
+    function verwijderKlant(id) { if(confirm("Klant wissen?")) { klantIds = klantIds.filter(x => x !== id); const el = document.getElementById(`card_${id}`); if(el) el.remove(); saveAllData(); checkVerzendbaarheid(); } }
+    function verwijderSessie(klantId, si) { klantSessies[klantId].splice(si, 1); updateKlantOverzicht(klantId); saveAllData(); }
 </script>
 </body>
 </html>

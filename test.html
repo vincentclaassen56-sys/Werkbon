@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Van Elst Werkbon v122 - TEST</title>
+    <style>
+        :root { --p: #2d4d36; --s: #27ae60; --err: #e74c3c; }
+        body { font-family: sans-serif; background: #f4f7f6; padding: 10px; margin: 0; }
+        .card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-top: 4px solid var(--p); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { margin: 0 0 10px 0; font-size: 1em; color: var(--p); text-transform: uppercase; }
+        label { display: block; margin-top: 10px; font-weight: bold; font-size: 0.8em; }
+        input { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; outline: none; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        .geldig { border: 2px solid var(--s) !important; background-color: #e8f5e9 !important; }
+        .fout { border: 2px solid var(--err) !important; background-color: #fdeaea !important; }
+        .btn { background: var(--p); color: white; border: none; padding: 16px; width: 100%; border-radius: 10px; font-weight: bold; font-size: 16px; margin-top: 10px; }
+        .totaal { background: #eee; padding: 12px; border-radius: 8px; margin-top: 10px; text-align: center; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <img src="https://www.vanelst.nl/wp-content/uploads/2021/03/Logo-Van-Elst-Logistics-RGB-1.png" style="width:140px; margin-bottom:10px;">
+    <h2>Dagoverzicht (TEST v122)</h2>
+    <label>Datum</label>
+    <input type="text" id="datum" readonly class="geldig">
+    <label>Medewerker</label>
+    <input type="text" id="mw" placeholder="Je naam..." oninput="vT(this)">
+    <div class="grid">
+        <div><label>Start</label><input type="text" id="ds" placeholder="08:00" onblur="vH(this)"></div>
+        <div><label>Eind</label><input type="text" id="de" placeholder="17:00" onblur="vH(this)"></div>
+        <div><label>Pauze</label><input type="number" id="dp" value="0" oninput="c()"></div>
+    </div>
+    <div class="totaal">Dagtijd: <span id="tdag">0:00</span></div>
+</div>
+<div id="kl"></div>
+<button class="btn" style="background:var(--s);" onclick="ak()">➕ KLANT TOEVOEGEN</button>
+<button id="sb" class="btn" style="opacity:0.5;" onclick="send()" disabled>📧 VERSTUREN</button>
+
+<script>
+let ids = [];
+function vH(el) {
+    let v = el.value.replace(/[^0-9]/g, "");
+    if (v.length === 3) v = "0" + v;
+    if (v.length === 4) {
+        let h = parseInt(v.substring(0, 2)), m = parseInt(v.substring(2, 4));
+        if (h >= 0 && h < 24 && m >= 0 && m < 60) {
+            el.value = (h < 10 ? "0" + h : h) + ":" + (m < 10 ? "0" + m : m);
+            el.classList.add('geldig'); el.classList.remove('fout');
+            c(); return;
+        }
+    }
+    if (el.value !== "") {
+        alert("Foutieve tijd! Gebruik bijv. 0800.");
+        el.value = ""; el.classList.remove('geldig'); el.classList.add('fout');
+    }
+    c();
+}
+function vT(el) { if (el.value.length > 1) el.classList.add('geldig'); else el.classList.remove('geldig'); c(); }
+function ak() {
+    const id = Date.now(); ids.push(id);
+    const div = document.createElement('div'); div.className = 'card';
+    div.innerHTML = `<h2>Klant</h2><label>Naam</label><input type="text" id="n_${id}" oninput="vT(this)">
+    <div class="totaal">Uren: <span id="u_${id}">0:00</span></div>`;
+    document.getElementById('kl').appendChild(div);
+}
+function bU(s, e, p) {
+    if (!s.includes(':') || !e.includes(':')) return "0:00";
+    let t1 = s.split(':'), t2 = e.split(':');
+    let m = (parseInt(t2[0])*60 + parseInt(t2[1])) - (parseInt(t1[0])*60 + parseInt(t1[1])) - (parseInt(p)||0);
+    return m <= 0 ? "0:00" : Math.floor(m/60) + ":" + String(m%60).padStart(2,'0');
+}
+function c() {
+    document.getElementById('tdag').innerText = bU(document.getElementById('ds').value, document.getElementById('de').value, document.getElementById('dp').value);
+    let ok = document.getElementById('mw').classList.contains('geldig') && document.getElementById('ds').classList.contains('geldig') && document.getElementById('de').classList.contains('geldig') && ids.length > 0;
+    document.getElementById('sb').disabled = !ok; document.getElementById('sb').style.opacity = ok ? "1" : "0.5";
+}
+function send() { window.location.href = `mailto:vincent@vanelst.nl?subject=Bon&body=Dagtijd: ${document.getElementById('tdag').innerText}`; }
+window.onload = () => { document.getElementById('datum').value = new Date().toLocaleDateString('nl-NL'); ak(); };
+</script>
+</body>
+</html>

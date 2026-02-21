@@ -3,114 +3,496 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Werkbon v123 - Met Locatie</title>
+    <title>Van Elst Werkbon v113</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js"></script>
+
     <style>
-        :root { --p: #2d4d36; --s: #27ae60; --err: #e74c3c; }
-        body { font-family: sans-serif; background: #f4f7f6; padding: 10px; margin: 0; }
-        .card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-top: 4px solid var(--p); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h2 { margin: 0 0 10px 0; font-size: 1em; color: var(--p); text-transform: uppercase; }
-        label { display: block; margin-top: 10px; font-weight: bold; font-size: 0.8em; }
-        input, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; outline: none; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-        .geldig { border: 2px solid var(--s) !important; background-color: #e8f5e9 !important; }
-        .fout { border: 2px solid var(--err) !important; background-color: #fdeaea !important; }
-        .btn { background: var(--p); color: white; border: none; padding: 16px; width: 100%; border-radius: 10px; font-weight: bold; font-size: 16px; margin-top: 10px; }
-        .totaal { background: #eee; padding: 12px; border-radius: 8px; margin-top: 10px; text-align: center; font-weight: bold; }
-        .loc-box { background: #e3f2fd; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 0.8em; border: 1px solid #2196f3; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 10px; color: #333; margin: 0; }
+        .container { max-width: 650px; margin: auto; display: none; padding-bottom: 100px; }
+        .login-container { max-width: 350px; margin: 80px auto; text-align: center; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .login-container img { max-width: 200px; margin-bottom: 20px; }
+        
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 4px solid #2d4d36; position: relative; }
+        h2 { margin: 0 0 5px 0; color: #2d4d36; font-size: 1.1em; text-transform: uppercase; }
+        label { display: block; margin-top: 10px; font-weight: 600; font-size: 0.85em; color: #444; }
+        
+        input, textarea, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; background: #fff; }
+        
+        .verplicht { background-color: #ffebee; border: 2px solid #ef9a9a; }
+        .geldig { background-color: #e8f5e9 !important; border: 2px solid #81c784 !important; }
+        
+        .btn-close-klant { position: absolute; top: 10px; right: 15px; background: none; border: none; color: #999; font-size: 24px; font-weight: bold; cursor: pointer; padding: 5px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .grid-laden { display: grid; grid-template-columns: 1fr 85px; gap: 8px; }
+        
+        .totaal-box { background: #f0f4f1; padding: 12px; border-radius: 8px; margin-top: 15px; text-align: center; font-weight: bold; color: #2d4d36; border: 1px solid #d1dbd3; }
+        .totaal-meting-klant { background: #fffde7; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 14px; border: 1px solid #fbc02d; color: #827717; text-align: center; font-weight: bold; }
+        
+        .btn-send { background: #2d4d36; color: white; border: none; padding: 18px; width: 100%; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        .btn-send:disabled, .btn-print:disabled { background: #bdc3c7; cursor: not-allowed; opacity: 0.6; }
+        
+        .btn-print { background: #2980b9; color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-add { background: #27ae60; color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 20px; }
+        .btn-map { background: #2d4d36; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 15px; margin-top: 15px; cursor: pointer; width: 100%; font-weight: bold; }
+        .btn-photo { background: #7f8c8d; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 15px; margin-top: 10px; cursor: pointer; width: 100%; font-weight: bold; }
+        
+        #map-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; }
+        #map { width:100%; height:100%; }
+        .measure-info { position:absolute; top:10px; left:50%; transform:translateX(-50%); background:white; padding:10px; border-radius:15px; font-weight:bold; z-index:1001; text-align: center; width: 90%; }
+        .map-controls { position:absolute; bottom:30px; left:10px; right:10px; display:flex; flex-direction:column; gap:10px; z-index:1001; }
+        .map-btn { flex:1; background:#2d4d36; color:white; padding:18px; border-radius:12px; font-weight:bold; cursor:pointer; border:none; font-size:16px; }
+        
+        .detail-line { display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #eee; padding: 8px; border-radius: 5px; margin-top: 5px; font-size: 13px; }
+        .reset-small { background: none; border: none; color: #e74c3c; font-size: 12px; text-decoration: underline; cursor: pointer; }
+        .photo-preview-text { font-size: 12px; color: #27ae60; margin-top: 5px; font-weight: bold; display: block; }
+        .photo-gallery { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+        .photo-gallery img { width: 80px; height: 80px; object-fit: cover; border-radius: 5px; border: 1px solid #ddd; }
+
+        .werkbon-nummer { float: right; font-size: 0.9em; color: #777; font-weight: bold; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .btn-send, .btn-add, .btn-print, .btn-map, .btn-photo, .btn-close-klant, .reset-small, #login-box, button, input[type="file"] { display: none !important; }
+            .container { display: block !important; padding: 0; max-width: 100%; }
+            .card { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; margin-bottom: 10px; }
+            input, textarea, select { border: none; padding: 5px; background: transparent !important; }
+            .totaal-box { background: #eee !important; border: 1px solid #000; }
+            .print-header { display: block !important; text-align: center; margin-bottom: 20px; }
+            .print-header img { max-width: 250px; }
+            .photo-gallery img { width: 150px; height: 150px; }
+        }
+        .print-header { display: none; }
     </style>
 </head>
-<body>
-<div class="card">
-    <img src="https://www.vanelst.nl/wp-content/uploads/2021/03/Logo-Van-Elst-Logistics-RGB-1.png" style="width:140px; margin-bottom:10px;">
-    <h2>Dagoverzicht (v123)</h2>
-    <label>Datum</label>
-    <input type="text" id="datum" readonly class="geldig">
-    <label>Medewerker</label>
-    <input type="text" id="mw" placeholder="Je naam..." oninput="vT(this)">
-    
-    <div class="loc-box" id="loc-status">📍 Locatie: Zoeken...</div>
+<body oninput="saveAllData(); checkVerzendbaarheid();">
 
-    <div class="grid">
-        <div><label>Start</label><input type="text" id="ds" placeholder="08:00" onblur="vH(this)"></div>
-        <div><label>Eind</label><input type="text" id="de" placeholder="17:00" onblur="vH(this)"></div>
-        <div><label>Pauze</label><input type="number" id="dp" value="0" oninput="c()"></div>
-    </div>
-    <div class="totaal">Totaal Dagtijd: <span id="tdag">0:00</span></div>
+<div id="login-box" class="login-container">
+    <img src="https://www.vanelst.nl/wp-content/uploads/2021/03/Logo-Van-Elst-Logistics-RGB-1.png" alt="Logo">
+    <input type="password" id="pincode" placeholder="Pincode" style="text-align:center;">
+    <button class="btn-send" onclick="checkCode()">INLOGGEN</button>
 </div>
 
-<div id="kl"></div>
-<button class="btn" style="background:var(--s);" onclick="ak()">➕ KLANT TOEVOEGEN</button>
-<button id="sb" class="btn" style="opacity:0.5;" onclick="send()" disabled>📧 VERSTUREN</button>
+<div id="app-content" class="container">
+    <div class="print-header">
+        <img src="https://www.vanelst.nl/wp-content/uploads/2021/03/Logo-Van-Elst-Logistics-RGB-1.png" alt="Van Elst Logo">
+        <h1>WERKBON <span id="bonNummerPrint"></span></h1>
+    </div>
+
+    <div class="card">
+        <div class="werkbon-nummer">BON: <span id="bonNummerApp"></span></div>
+        <h2>Dagoverzicht</h2>
+        <label>Datum & Dag</label>
+        <input type="text" id="dag_datum" class="verplicht" placeholder="Bijv: Maandag 23-02-2026" oninput="validateText(this)">
+        
+        <label>Medewerker</label>
+        <input type="text" id="medewerker" class="verplicht" placeholder="Naam medewerker..." autocomplete="name" oninput="validateText(this)">
+        
+        <label>Algemene werkzaamheden (onderhoud/eigen bedrijf)</label>
+        <textarea id="algemene_werk" rows="2" autocomplete="on" oninput="validateText(this)"></textarea>
+        
+        <div class="grid-3">
+            <div><label>Start</label><input type="text" id="dag_start" class="verplicht" placeholder="0:00" onblur="formatTijd(this); calc()"></div>
+            <div><label>Eind</label><input type="text" id="dag_eind" class="verplicht" placeholder="0:00" onblur="formatTijd(this); calc()"></div>
+            <div><label>Pauze (m)</label><input type="number" id="dag_pauze" class="verplicht" placeholder="0" oninput="validateNumber(this); calc()"></div>
+        </div>
+        <div class="totaal-box">Totaal Dagtijd: <span id="totaalDagUren">0:00</span></div>
+    </div>
+
+    <div id="klanten-lijst"></div>
+    <button class="btn-add" onclick="voegKlantBlokToe()">➕ VOLGENDE KLANT TOEVOEGEN</button>
+
+    <div class="card">
+        <button id="sendBtn" class="btn-send" onclick="verstuurMail()" disabled>📧 WERKBON VERZENDEN</button>
+        <button id="printBtn" class="btn-print" onclick="window.print()" disabled>📄 OPSLAAN ALS PDF / PRINTEN</button>
+        <button onclick="if(confirm('Alles wissen? Alle gegevens worden permanent verwijderd.')) clearAllData()" style="background:none; border:none; color:grey; width:100%; margin-top:20px; font-size:11px; cursor:pointer;">Reset alle velden</button>
+    </div>
+</div>
+
+<div id="map-overlay">
+    <div class="measure-info">
+        <div style="display:flex; gap:5px; margin-bottom:5px;">
+            <button id="btn-mode-loc" class="map-btn" style="padding:10px; font-size:12px;" onclick="setMapMode('loc')">📍 PIONNEN</button>
+            <button id="btn-mode-meas" class="map-btn" style="padding:10px; font-size:12px; background:#777;" onclick="setMapMode('meas')">📏 METEN</button>
+        </div>
+        <span id="distLabel" style="display:none; color:#e67e22;">Afstand: 0.0 m</span>
+    </div>
+    <div id="map"></div>
+    <div class="map-controls">
+        <button class="map-btn" style="background:#f39c12;" onclick="undoLast()">↩️ STAP TERUG</button>
+        <div style="display:flex; gap:10px;">
+            <button class="map-btn" style="background:#7f8c8d;" onclick="closeMap(false)">✖️ TERUG</button>
+            <button class="map-btn" onclick="closeMap(true)">✅ OPSLAAN</button>
+        </div>
+    </div>
+</div>
 
 <script>
-let ids = [];
-let gloc = "Onbekend";
+    let klantIds = [];
+    let klantSessies = {}; 
+    let photoData = {}; 
+    let map, polyline, userPosMarker;
+    let locMarkers = [], measMarkers = [], measPoints = [];
+    let currentKlantId = 0, currentSessieMeters = 0, mapMode = 'loc';
+    let huidigBonNummer = 0;
 
-// Locatie ophalen
-function getLoc() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(p => {
-            gloc = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
-            document.getElementById('loc-status').innerText = "📍 Locatie: Opgeslagen";
-            document.getElementById('loc-status').style.background = "#e8f5e9";
-        }, () => {
-            document.getElementById('loc-status').innerText = "📍 Locatie: Geen toegang";
-        });
+    function checkCode() {
+        if (document.getElementById('pincode').value === "1234") {
+            document.getElementById('login-box').style.display = 'none';
+            document.getElementById('app-content').style.display = 'block';
+            initApp();
+        } else { alert("Onjuiste pincode"); }
     }
-}
 
-function vH(el) {
-    let v = el.value.replace(/[^0-9]/g, "");
-    if (v.length === 3) v = "0" + v;
-    if (v.length === 4) {
-        let h = parseInt(v.substring(0, 2)), m = parseInt(v.substring(2, 4));
-        if (h >= 0 && h < 24 && m >= 0 && m < 60) {
-            el.value = (h < 10 ? "0" + h : h) + ":" + (m < 10 ? "0" + m : m);
-            el.classList.add('geldig'); el.classList.remove('fout');
-            c(); return;
+    function initApp() {
+        // Bonnummer regelen
+        let laatstNummer = localStorage.getItem('v113_last_bon');
+        if(!laatstNummer) {
+            laatstNummer = 1000;
+        } else {
+            // Als we een nieuwe sessie starten (geen save), verhogen we hem
+            if(!localStorage.getItem('v113_save')) {
+                laatstNummer = parseInt(laatstNummer) + 1;
+            }
         }
+        huidigBonNummer = laatstNummer;
+        localStorage.setItem('v113_last_bon', huidigBonNummer);
+        document.getElementById('bonNummerApp').innerText = huidigBonNummer;
+        document.getElementById('bonNummerPrint').innerText = "#" + huidigBonNummer;
+
+        const datumVeld = document.getElementById('dag_datum');
+        if(!datumVeld.value) {
+            const nu = new Date();
+            const dagen = ['Zondag', 'Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag'];
+            const dd = String(nu.getDate()).padStart(2, '0');
+            const mm = String(nu.getMonth() + 1).padStart(2, '0');
+            const jjjj = nu.getFullYear();
+            datumVeld.value = `${dagen[nu.getDay()]} ${dd}-${mm}-${jjjj}`;
+            validateText(datumVeld);
+        }
+        initMap(); 
+        loadAllData();
     }
-    if (el.value !== "") {
-        alert("Foutieve tijd! Gebruik bijv. 0800.");
-        el.value = ""; el.classList.remove('geldig'); el.classList.add('fout');
+
+    function formatTijd(input) {
+        let v = input.value.trim().replace('.', ':').replace(',', ':');
+        if (!v) return;
+        let u, m;
+        if (v.includes(':')) {
+            let parts = v.split(':');
+            u = parseInt(parts[0]);
+            m = parseInt(parts[1]) || 0;
+        } else if (v.length <= 2) {
+            u = parseInt(v); m = 0;
+        } else if (v.length <= 4) {
+            u = parseInt(v.slice(0, -2));
+            m = parseInt(v.slice(-2));
+        }
+        if (!isNaN(u) && u >= 0 && u <= 23 && !isNaN(m) && m >= 0 && m <= 59) {
+            input.value = String(u).padStart(2, '0') + ":" + String(m).padStart(2, '0');
+            input.classList.add('geldig');
+        } else {
+            alert("Ongeldige tijd");
+            input.value = "";
+            input.classList.remove('geldig');
+        }
+        checkVerzendbaarheid();
     }
-    c();
-}
 
-function vT(el) { if (el.value.length > 1) el.classList.add('geldig'); else el.classList.remove('geldig'); c(); }
+    function validateNumber(el) {
+        if (el.value !== "" && el.value >= 0) el.classList.add('geldig');
+        else el.classList.remove('geldig');
+        checkVerzendbaarheid();
+    }
 
-function ak() {
-    const id = Date.now(); ids.push(id);
-    const div = document.createElement('div'); div.className = 'card';
-    div.innerHTML = `<h2>Klant</h2><label>Naam</label><input type="text" id="n_${id}" oninput="vT(this)">
-    <label>Werkzaamheden</label><textarea id="w_${id}" rows="2"></textarea>
-    <div class="totaal">Uren: <span id="u_${id}">0:00</span></div>`;
-    document.getElementById('kl').appendChild(div);
-}
+    function validateText(el) {
+        if (el.value.length > 2) el.classList.add('geldig');
+        else el.classList.remove('geldig');
+        checkVerzendbaarheid();
+    }
 
-function bU(s, e, p) {
-    if (!s.includes(':') || !e.includes(':')) return "0:00";
-    let t1 = s.split(':'), t2 = e.split(':');
-    let m = (parseInt(t2[0])*60 + parseInt(t2[1])) - (parseInt(t1[0])*60 + parseInt(t1[1])) - (parseInt(p)||0);
-    return m <= 0 ? "0:00" : Math.floor(m/60) + ":" + String(m%60).padStart(2,'0');
-}
+    function voegKlantBlokToe() {
+        const i = Date.now();
+        if(!klantIds.includes(i)) {
+            klantIds.push(i);
+            klantSessies[i] = [];
+            photoData[i] = [];
+        }
+        
+        const container = document.getElementById('klanten-lijst');
+        const blok = document.createElement('div');
+        blok.className = 'card';
+        blok.id = `card_${i}`;
+        blok.innerHTML = `
+            <button class="btn-close-klant" onclick="verwijderKlant(${i})">×</button>
+            <h2>KLANT ${klantIds.indexOf(i) + 1}</h2>
+            
+            <label>Klantnaam</label><input type="text" id="klant_naam_${i}" autocomplete="organization" oninput="validateText(this)">
+            <label>Machine / Kenteken</label><input type="text" id="klant_machine_${i}" autocomplete="on" oninput="validateText(this)">
+            <label>Werkzaamheden</label><textarea id="klant_werk_${i}" rows="2" autocomplete="on" oninput="validateText(this)"></textarea>
+            
+            <div class="grid-2">
+                <div><label>Reistijd Heen (m)</label><input type="number" id="k_heen_${i}" class="verplicht" placeholder="min" oninput="validateNumber(this)"></div>
+                <div><label>Reistijd Terug (m)</label><input type="number" id="k_terug_${i}" class="verplicht" placeholder="min" oninput="validateNumber(this)"></div>
+            </div>
 
-function c() {
-    document.getElementById('tdag').innerText = bU(document.getElementById('ds').value, document.getElementById('de').value, document.getElementById('dp').value);
-    let ok = document.getElementById('mw').classList.contains('geldig') && document.getElementById('ds').classList.contains('geldig') && document.getElementById('de').classList.contains('geldig') && ids.length > 0;
-    document.getElementById('sb').disabled = !ok; document.getElementById('sb').style.opacity = ok ? "1" : "0.5";
-}
+            <div class="grid-3">
+                <div><label>Start Werk</label><input type="text" id="k_start_${i}" class="verplicht" placeholder="0:00" onblur="formatTijd(this); calcK(${i})"></div>
+                <div><label>Eind Werk</label><input type="text" id="k_eind_${i}" class="verplicht" placeholder="0:00" onblur="formatTijd(this); calcK(${i})"></div>
+                <div><label>Pauze (m)</label><input type="number" id="k_pauze_${i}" class="verplicht" placeholder="0" oninput="validateNumber(this); calcK(${i})"></div>
+            </div>
 
-function send() {
-    let body = `Bon van: ${document.getElementById('mw').value}\nLocatie: ${gloc}\nTotaal: ${document.getElementById('tdag').innerText}`;
-    window.location.href = `mailto:vincent@vanelst.nl?subject=Werkbon&body=${encodeURIComponent(body)}`;
-}
+            <div class="grid-2">
+                <div><label>Wachttijd (m)</label><input type="number" id="k_wacht_${i}" placeholder="0" oninput="validateNumber(this)"></div>
+                <div>
+                    <label>Reden</label>
+                    <select id="k_reden_${i}">
+                        <option value="Wachten">Wachten</option>
+                        <option value="Machine kapot">Machine kapot</option>
+                        <option value="Anders">Anders</option>
+                    </select>
+                </div>
+            </div>
 
-window.onload = () => {
-    document.getElementById('datum').value = new Date().toLocaleDateString('nl-NL');
-    getLoc();
-    ak();
-};
+            <div class="grid-2">
+                <div class="grid-laden">
+                    <div><label>Laden</label><input type="text" id="k_laden_${i}" autocomplete="on" oninput="validateText(this)"></div>
+                    <div><label> </label><select id="unit_l_${i}"><option>m3</option><option>ton</option><option>kg</option><option>st</option></select></div>
+                </div>
+                <div class="grid-laden">
+                    <div><label>Lossen</label><input type="text" id="k_lossen_${i}" autocomplete="on" oninput="validateText(this)"></div>
+                    <div><label> </label><select id="unit_lo_${i}"><option>m3</option><option>ton</option><option>kg</option><option>st</option></select></div>
+                </div>
+            </div>
+
+            <button class="btn-map" onclick="openMap(${i})">📍 NIEUWE LOCATIE/AFSTAND</button>
+            <div id="loc_list_${i}" style="margin-top:10px;"></div>
+            <div id="klant_totaal_meting_${i}" class="totaal-meting-klant">Totaal gemeten afstand: 0.0m | 0 locaties</div>
+
+            <button class="btn-photo" onclick="document.getElementById('file_${i}').click()">📸 FOTO TOEVOEGEN</button>
+            <input type="file" id="file_${i}" accept="image/*" capture="environment" style="display:none;" onchange="handlePhoto(${i})">
+            <div id="gallery_${i}" class="photo-gallery"></div>
+            <span id="txt_photo_${i}" class="photo-preview-text" style="display:none;"></span>
+
+            <div class="totaal-box">Uren Klant: <span id="totaal_k_${i}">0:00</span></div>
+        `;
+        container.appendChild(blok);
+        updateKlantOverzicht(i);
+        saveAllData(); checkVerzendbaarheid();
+    }
+
+    function checkVerzendbaarheid() {
+        const medOk = document.getElementById('medewerker').classList.contains('geldig');
+        const datOk = document.getElementById('dag_datum').classList.contains('geldig');
+        const dS = document.getElementById('dag_start').classList.contains('geldig');
+        const dE = document.getElementById('dag_eind').classList.contains('geldig');
+        const dP = document.getElementById('dag_pauze').classList.contains('geldig');
+        
+        let allKlantOk = true;
+        klantIds.forEach(id => {
+            const fields = [`k_start_${id}`, `k_eind_${id}`, `k_pauze_${id}`, `k_heen_${id}`, `k_terug_${id}`];
+            fields.forEach(f => { 
+                const el = document.getElementById(f); 
+                if(!el || !el.classList.contains('geldig')) allKlantOk = false; 
+            });
+        });
+
+        const isGereed = (medOk && datOk && dS && dE && dP && allKlantOk);
+        document.getElementById('sendBtn').disabled = !isGereed;
+        document.getElementById('printBtn').disabled = !isGereed;
+    }
+
+    function initMap() {
+        map = L.map('map', { zoomControl: false, rotate: true, touchRotate: true }).setView([51.712, 5.869], 13);
+        L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3'] }).addTo(map);
+        polyline = L.polyline([], {color: '#e67e22', weight: 4}).addTo(map);
+        map.on('click', (e) => { mapMode === 'loc' ? createLocMarker(e.latlng) : createMeasMarker(e.latlng); });
+    }
+
+    function openMap(i) { 
+        currentKlantId = i; 
+        clearMapGraphics(); 
+        currentSessieMeters = 0; 
+        document.getElementById('map-overlay').style.display = 'block'; 
+        
+        setTimeout(() => {
+            map.invalidateSize();
+            map.locate({setView: true, maxZoom: 18});
+        }, 200);
+    }
+
+    map.on('locationfound', function(e) {
+        if (userPosMarker) map.removeLayer(userPosMarker);
+        userPosMarker = L.circleMarker(e.latlng, { radius: 10, color: '#3498db', fillColor: '#3498db', fillOpacity: 0.8, weight: 3 }).addTo(map);
+        userPosMarker.bindPopup("Huidige locatie").openPopup();
+    });
+
+    function createLocMarker(latlng) {
+        let m = L.marker(latlng, {draggable: true}).addTo(map);
+        m.on('click', (e) => { L.DomEvent.stopPropagation(e); map.removeLayer(m); locMarkers = locMarkers.filter(x => x !== m); });
+        locMarkers.push(m);
+    }
+
+    function createMeasMarker(latlng) {
+        measPoints.push(latlng);
+        let m = L.circleMarker(latlng, {radius: 6, color: '#e67e22', fillColor: 'white', fillOpacity: 1, weight: 2}).addTo(map);
+        measMarkers.push(m); polyline.setLatLngs(measPoints); updateDist();
+    }
+
+    function updateDist() {
+        let d = 0;
+        for (let i = 0; i < measPoints.length - 1; i++) { d += measPoints[i].distanceTo(measPoints[i+1]); }
+        currentSessieMeters = parseFloat(d.toFixed(1));
+        document.getElementById('distLabel').innerText = "Afstand: " + currentSessieMeters + " m";
+    }
+
+    function setMapMode(m) {
+        mapMode = m;
+        document.getElementById('btn-mode-loc').style.background = m === 'loc' ? '#2d4d36' : '#777';
+        document.getElementById('btn-mode-meas').style.background = m === 'meas' ? '#2d4d36' : '#777';
+        document.getElementById('distLabel').style.display = m === 'meas' ? 'inline' : 'none';
+    }
+
+    function closeMap(save) {
+        if (save) {
+            if(!klantSessies[currentKlantId]) klantSessies[currentKlantId] = [];
+            klantSessies[currentKlantId].push({ meters: currentSessieMeters, locaties: locMarkers.map(m => m.getLatLng()) });
+            updateKlantOverzicht(currentKlantId);
+            saveAllData();
+        }
+        document.getElementById('map-overlay').style.display = 'none';
+    }
+
+    function updateKlantOverzicht(id) {
+        let html = "", tM = 0, tL = 0;
+        if(klantSessies[id]) {
+            klantSessies[id].forEach((s, idx) => {
+                tM += s.meters; tL += s.locaties.length;
+                html += `<div class="detail-line"><span>Gemeten afstand ${idx+1}: ${s.meters}m / ${s.locaties.length} loc</span><button class="reset-small" onclick="verwijderSessie(${id}, ${idx})">Wis</button></div>`;
+            });
+        }
+        const el = document.getElementById(`loc_list_${id}`);
+        const tot = document.getElementById(`klant_totaal_meting_${id}`);
+        if(el) el.innerHTML = html;
+        if(tot) tot.innerHTML = `Totaal gemeten afstand: ${tM.toFixed(1)}m | ${tL} locaties`;
+    }
+
+    function calc() { document.getElementById('totaalDagUren').innerText = berekenUren('dag_start','dag_eind','dag_pauze'); }
+    function calcK(i) { document.getElementById(`totaal_k_${i}`).innerText = berekenUren(`k_start_${i}`,`k_eind_${i}`,`k_pauze_${i}`); }
+    
+    function berekenUren(sI, eI, pI) {
+        let sVal = document.getElementById(sI).value, eVal = document.getElementById(eI).value;
+        if(!sVal || !eVal) return "0:00";
+        let s = sVal.split(':'), e = eVal.split(':');
+        let p = parseInt(document.getElementById(pI).value) || 0;
+        let t = (parseInt(e[0])*60 + parseInt(e[1])) - (parseInt(s[0])*60 + parseInt(s[1])) - p;
+        return t<=0 ? "0:00" : Math.floor(t/60) + ":" + String(t%60).padStart(2, '0');
+    }
+
+    function saveAllData() {
+        const data = { ids: klantIds, sessies: klantSessies, photos: photoData, bonNr: huidigBonNummer };
+        document.querySelectorAll('input:not(#pincode), textarea, select').forEach(el => { if(el.id) data[el.id] = el.value; });
+        localStorage.setItem('v113_save', JSON.stringify(data));
+    }
+
+    function loadAllData() {
+        const s = localStorage.getItem('v113_save');
+        if(s) {
+            const d = JSON.parse(s);
+            klantSessies = d.sessies || {};
+            photoData = d.photos || {};
+            if(d.bonNr) huidigBonNummer = d.bonNr;
+            document.getElementById('bonNummerApp').innerText = huidigBonNummer;
+            document.getElementById('bonNummerPrint').innerText = "#" + huidigBonNummer;
+            
+            if(d.ids) d.ids.forEach(id => { voegKlantBlokToe(); renderGallery(id); });
+            for(let key in d) { 
+                let el = document.getElementById(key); 
+                if(el) { el.value = d[key]; if(el.value.length > 0) el.classList.add('geldig'); }
+            }
+        } else { voegKlantBlokToe(); }
+        calc(); checkVerzendbaarheid();
+    }
+
+    function clearAllData() { localStorage.removeItem('v113_save'); location.reload(); }
+
+    function handlePhoto(i) {
+        const file = document.getElementById(`file_${i}`).files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            photoData[i].push(e.target.result);
+            renderGallery(i);
+            saveAllData();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function renderGallery(i) {
+        const container = document.getElementById(`gallery_${i}`);
+        const span = document.getElementById(`txt_photo_${i}`);
+        if(!container) return;
+        container.innerHTML = "";
+        photoData[i].forEach((src, idx) => {
+            const img = document.createElement('img');
+            img.src = src;
+            container.appendChild(img);
+        });
+        if(photoData[i].length > 0) {
+            span.style.display = 'block';
+            span.innerHTML = `✅ ${photoData[i].length} foto('s) <button class="reset-small" onclick="resetPhotos(${i})">Wissen</button>`;
+        } else { span.style.display = 'none'; }
+    }
+
+    function resetPhotos(i) { photoData[i] = []; renderGallery(i); saveAllData(); }
+    function clearMapGraphics() { locMarkers.forEach(m => map.removeLayer(m)); locMarkers = []; measMarkers.forEach(m => map.removeLayer(m)); measMarkers = []; measPoints = []; polyline.setLatLngs([]); }
+    function undoLast() { if(mapMode === 'loc' && locMarkers.length > 0) map.removeLayer(locMarkers.pop()); else if(mapMode === 'meas' && measMarkers.length > 0) { map.removeLayer(measMarkers.pop()); measPoints.pop(); polyline.setLatLngs(measPoints); updateDist(); } }
+    function verwijderKlant(id) { if(confirm("Klant wissen?")) { klantIds = klantIds.filter(x => x !== id); const el = document.getElementById(`card_${id}`); if(el) el.remove(); saveAllData(); checkVerzendbaarheid(); } }
+    function verwijderSessie(klantId, si) { klantSessies[klantId].splice(si, 1); updateKlantOverzicht(klantId); saveAllData(); }
+
+    function verstuurMail() {
+        const med = document.getElementById('medewerker').value || "Onbekend";
+        const datum = document.getElementById('dag_datum').value || "-";
+        const algWerk = document.getElementById('algemene_werk').value;
+        let hasPhotos = false;
+        klantIds.forEach(id => { if(photoData[id].length > 0) hasPhotos = true; });
+
+        let body = "WERKBON VAN ELST - BON #" + huidigBonNummer + "\n";
+        body += "==============================\n";
+        if(hasPhotos) {
+            body += "!! LET OP: FOTO'S ZIJN INGEVOEGD IN DE PDF !!\n";
+            body += "==============================\n";
+        }
+        body += "Medewerker: " + med + "\n";
+        body += "Datum: " + datum + "\n";
+        if(algWerk) body += "Eigen werkzaamheden: " + algWerk + "\n";
+        body += "Netto Dagtijd: " + document.getElementById('totaalDagUren').innerText + "\n";
+        body += "==============================\n\n";
+
+        klantIds.forEach((id, index) => {
+            body += "KLANT " + (index + 1) + "\n";
+            body += "------------------------------\n";
+            body += "Naam: " + (document.getElementById("klant_naam_" + id).value || "-") + "\n";
+            body += "Netto Uren: " + document.getElementById("totaal_k_" + id).innerText + "\n";
+            
+            let tM = 0;
+            if(klantSessies[id] && klantSessies[id].length > 0) {
+                body += "\nGEMETEN AFSTANDEN:\n";
+                klantSessies[id].forEach((s, si) => {
+                    tM += s.meters;
+                    body += "Meting " + (si+1) + ": " + s.meters + "m\n";
+                });
+                body += "Totaal gemeten afstand klant: " + tM.toFixed(1) + "m\n";
+            }
+            body += "------------------------------\n\n";
+        });
+
+        const subject = "Bon #" + huidigBonNummer + " | Werkbon " + med + " (" + datum + ")";
+        window.location.href = "mailto:vincent@vanelst.nl?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+    }
 </script>
 </body>
 </html>

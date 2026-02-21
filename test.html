@@ -3,36 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Van Elst Werkbon v115</title>
+    <title>Van Elst Werkbon v116 - Hersteld</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 10px; color: #333; margin: 0; }
         .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 5px solid #2d4d36; position: relative; }
-        h2 { margin: 0 0 10px 0; color: #2d4d36; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
+        h2 { margin: 0 0 10px 0; color: #2d4d36; font-size: 1.1em; text-transform: uppercase; }
         label { display: block; margin-top: 12px; font-weight: 600; font-size: 0.85em; color: #555; }
-        input, textarea, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; outline: none; }
+        input, textarea, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; outline: none; background: #fff; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .grid-eenheid { display: grid; grid-template-columns: 1fr 85px; gap: 5px; }
-        .verplicht { border: 2px solid #ef9a9a !important; background-color: #fff8f8; }
-        .geldig { border: 2px solid #81c784 !important; background-color: #f8fff9 !important; }
+        .verplicht { border: 2px solid #ef9a9a !important; }
+        .geldig { border: 2px solid #81c784 !important; }
         .totaal-balk { background: #f0f4f1; padding: 12px; border-radius: 8px; margin-top: 15px; text-align: center; font-weight: bold; color: #2d4d36; border: 1px solid #d1dbd3; }
         .gele-balk { background: #fffde7; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 14px; border: 1px solid #fbc02d; color: #827717; text-align: center; font-weight: bold; }
-        .btn-add { background: #5cb85c; color: white; border: none; padding: 16px; width: 100%; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 20px; text-transform: uppercase; }
+        .btn-add { background: #5cb85c; color: white; border: none; padding: 16px; width: 100%; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 20px; }
         .btn-send { background: #2d4d36; color: white; border: none; padding: 18px; width: 100%; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
-        .btn-send:disabled { background: #bdc3c7; cursor: not-allowed; }
+        .btn-send:disabled { background: #bdc3c7; }
         .btn-map { background: #344e41; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 15px; margin-top: 15px; cursor: pointer; width: 100%; font-weight: bold; }
+        .photo-gallery { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+        .photo-gallery img { width: 80px; height: 80px; object-fit: cover; border-radius: 5px; }
         #map-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:1000; }
-        #map { width:100%; height:75%; }
-        @media print { .btn-add, .btn-send, .btn-map, #login-box, button, input[type="file"] { display: none !important; } }
+        #map { width:100%; height:70%; }
+        @media print { .btn-add, .btn-send, .btn-map, #login-box, button, input[type="file"], .no-print { display: none !important; } .card { box-shadow: none; border: 1px solid #ccc; } }
     </style>
 </head>
 <body oninput="saveData()">
 
-<div id="login-box" class="card" style="text-align:center; margin-top: 80px; max-width: 350px; margin-left: auto; margin-right: auto;">
+<div id="login-box" class="card" style="text-align:center; margin-top: 80px; max-width: 350px; margin: 80px auto;">
     <img src="https://www.vanelst.nl/wp-content/uploads/2021/03/Logo-Van-Elst-Logistics-RGB-1.png" style="width:180px; margin-bottom: 20px;">
-    <input type="password" id="pincode" placeholder="Pincode" style="text-align:center;">
+    <input type="password" id="pincode" placeholder="Pincode">
     <button class="btn-send" style="margin-top:20px;" onclick="checkLogin()">INLOGGEN</button>
 </div>
 
@@ -41,39 +43,40 @@
         <div style="float: right; font-weight: bold; color: #999;">BON: <span id="bonNr"></span></div>
         <h2>Dagoverzicht</h2>
         <label>Datum & Dag</label>
-        <input type="text" id="dag_datum" placeholder="Bijv. Maandag 23-02-2026">
+        <input type="text" id="dag_datum">
         <label>Medewerker</label>
-        <input type="text" id="medewerker" placeholder="Naam medewerker..." oninput="vText(this)">
+        <input type="text" id="medewerker" oninput="vText(this)">
         <label>Algemene werkzaamheden (onderhoud/eigen bedrijf)</label>
-        <textarea id="alg_werk" rows="2" placeholder="Omschrijf hier algemene taken..."></textarea>
+        <textarea id="alg_werk" rows="2"></textarea>
         <div class="grid-3">
-            <div><label>Start</label><input type="text" id="d_start" placeholder="0:00" onblur="fTijd(this)"></div>
-            <div><label>Eind</label><input type="text" id="d_eind" placeholder="0:00" onblur="fTijd(this)"></div>
+            <div><label>Start</label><input type="text" id="d_start" onblur="fTijd(this)"></div>
+            <div><label>Eind</label><input type="text" id="d_eind" onblur="fTijd(this)"></div>
             <div><label>Pauze (m)</label><input type="number" id="d_pauze" value="0" oninput="rekenen()"></div>
         </div>
         <div class="totaal-balk">Totaal Dagtijd: <span id="t_dag">0:00</span></div>
     </div>
 
     <div id="klanten-lijst"></div>
-    <button class="btn-add" onclick="voegKlantToe()">➕ Volgende klant toevoegen</button>
+    <button class="btn-add no-print" onclick="voegKlantToe()">➕ Volgende klant toevoegen</button>
 
-    <div class="card">
+    <div class="card no-print">
         <button id="sendBtn" class="btn-send" onclick="mailen()" disabled>📧 Werkbon verzenden</button>
         <button class="btn-map" style="background:#2980b9; margin-top:10px;" onclick="window.print()">📄 Opslaan als PDF / Printen</button>
+        <p style="text-align:center; color:grey; font-size:12px; margin-top:20px; cursor:pointer;" onclick="clearAll()">Reset alle velden</p>
     </div>
 </div>
 
 <div id="map-overlay">
     <div id="map"></div>
     <div style="padding:15px; text-align:center;">
-        <div id="m_info" style="font-weight:bold; margin-bottom:10px;">Klik op de kaart om te meten</div>
+        <div id="m_info" style="font-weight:bold; margin-bottom:10px;">Prik locaties op de kaart</div>
         <button class="btn-send" onclick="sluitKaart(true)">✅ Opslaan & Sluiten</button>
         <button class="btn-send" style="background:#e74c3c; margin-top:10px;" onclick="sluitKaart(false)">✖ Annuleren</button>
     </div>
 </div>
 
 <script>
-    let kIds = [], kAfstanden = {}, map, poly, markers = [], curK = 0, mAfstand = 0;
+    let kIds = [], kAfstanden = {}, kPhotos = {}, map, poly, markers = [], curK = 0, mAfstand = 0;
 
     function checkLogin() {
         if(document.getElementById('pincode').value === "1234") {
@@ -109,13 +112,14 @@
     function rekenen() {
         document.getElementById('t_dag').innerText = diff(document.getElementById('d_start').value, document.getElementById('d_eind').value, parseInt(document.getElementById('d_pauze').value)||0);
         kIds.forEach(id => {
-            document.getElementById('t_'+id).innerText = diff(document.getElementById('s_'+id).value, document.getElementById('e_'+id).value, parseInt(document.getElementById('p_'+id).value)||0);
+            const el = document.getElementById('t_'+id);
+            if(el) el.innerText = diff(document.getElementById('s_'+id).value, document.getElementById('e_'+id).value, parseInt(document.getElementById('p_'+id).value)||0);
         });
         checkVerzendbaar();
     }
 
     function diff(s, e, p) {
-        if(!s.includes(':') || !e.includes(':')) return "0:00";
+        if(!s || !e || !s.includes(':') || !e.includes(':')) return "0:00";
         let [sH, sM] = s.split(':').map(Number), [eH, eM] = e.split(':').map(Number);
         let t = (eH*60+eM) - (sH*60+sM) - p;
         if(t < 0) t += 1440;
@@ -123,32 +127,28 @@
     }
 
     function voegKlantToe() {
-        const i = Date.now(); kIds.push(i);
+        const i = Date.now(); kIds.push(i); kPhotos[i] = [];
         const div = document.createElement('div');
         div.className = 'card'; div.id = 'c_'+i;
         div.innerHTML = `
-            <button style="float:right; border:none; background:none; color:red; font-size:20px;" onclick="verwijderK(${i})">×</button>
+            <button class="no-print" style="float:right; border:none; background:none; color:red; font-size:20px;" onclick="verwijderK(${i})">×</button>
             <h2>Klant ${kIds.length}</h2>
-            <label>Klantnaam</label><input type="text" id="n_${i}" placeholder="Bijv. Gemeente Grave" oninput="vText(this)">
-            <label>Machine / Kenteken</label><input type="text" id="m_${i}" placeholder="Bijv. Kraan 01">
+            <label>Klantnaam</label><input type="text" id="n_${i}" oninput="vText(this)">
+            <label>Machine / Kenteken</label><input type="text" id="m_${i}">
             <label>Werkzaamheden</label><textarea id="w_${i}" rows="2"></textarea>
-            
             <div class="grid-2">
-                <div><label>Reistijd Heen (m)</label><input type="number" id="rh_${i}" placeholder="min"></div>
-                <div><label>Reistijd Terug (m)</label><input type="number" id="rt_${i}" placeholder="min"></div>
+                <div><label>Reistijd Heen (m)</label><input type="number" id="rh_${i}"></div>
+                <div><label>Reistijd Terug (m)</label><input type="number" id="rt_${i}"></div>
             </div>
-
             <div class="grid-3">
-                <div><label>Start Werk</label><input type="text" id="s_${i}" placeholder="0:00" onblur="fTijd(this)"></div>
-                <div><label>Eind Werk</label><input type="text" id="e_${i}" placeholder="0:00" onblur="fTijd(this)"></div>
+                <div><label>Start Werk</label><input type="text" id="s_${i}" onblur="fTijd(this)"></div>
+                <div><label>Eind Werk</label><input type="text" id="e_${i}" onblur="fTijd(this)"></div>
                 <div><label>Pauze (m)</label><input type="number" id="p_${i}" value="0" oninput="rekenen()"></div>
             </div>
-
             <div class="grid-2">
                 <div><label>Wachttijd (m)</label><input type="number" id="wt_${i}" value="0"></div>
                 <div><label>Reden</label><select id="wr_${i}"><option>Wachten</option><option>Kapot</option><option>Anders</option></select></div>
             </div>
-
             <div class="grid-2">
                 <div class="grid-eenheid">
                     <div><label>Laden</label><input type="text" id="ld_${i}"></div>
@@ -159,13 +159,13 @@
                     <div><label>&nbsp;</label><select id="lsu_${i}"><option>m3</option><option>ton</option><option>kg</option></select></div>
                 </div>
             </div>
-
-            <button class="btn-map" onclick="openKaart(${i})">📍 NIEUWE LOCATIE/AFSTAND</button>
-            <div id="gb_${i}" class="gele-balk">Totaal gemeten afstand: <span id="dist_${i}">0.0</span>m | 0 locaties</div>
+            <button class="btn-map no-print" onclick="openKaart(${i})">📍 NIEUWE LOCATIE/AFSTAND</button>
+            <div class="gele-balk">Totaal gemeten afstand: <span id="dist_${i}">0.0</span>m</div>
+            <input type="file" accept="image/*" capture="environment" class="no-print" style="margin-top:15px;" onchange="handlePhoto(this, ${i})">
+            <div id="gal_${i}" class="photo-gallery"></div>
             <div class="totaal-balk">Uren Klant: <span id="t_${i}">0:00</span></div>
         `;
         document.getElementById('klanten-lijst').appendChild(div);
-        checkVerzendbaar();
     }
 
     function initKaart() {
@@ -183,7 +183,6 @@
     }
 
     function openKaart(id) { curK = id; document.getElementById('map-overlay').style.display='block'; setTimeout(()=>map.invalidateSize(), 200); map.locate({setView:true, maxZoom:16}); }
-    
     function sluitKaart(save) {
         if(save) { kAfstanden[curK] = mAfstand.toFixed(1); document.getElementById('dist_'+curK).innerText = mAfstand.toFixed(1); }
         markers.forEach(m => map.removeLayer(m)); markers = []; poly.setLatLngs([]);
@@ -191,38 +190,50 @@
         saveData();
     }
 
+    function handlePhoto(el, id) {
+        const reader = new FileReader();
+        reader.onload = e => { kPhotos[id].push(e.target.result); renderGallery(id); saveData(); };
+        reader.readAsDataURL(el.files[0]);
+    }
+
+    function renderGallery(id) {
+        const g = document.getElementById('gal_'+id); g.innerHTML = "";
+        kPhotos[id].forEach(src => { const img = document.createElement('img'); img.src = src; g.appendChild(img); });
+    }
+
     function checkVerzendbaar() {
-        const ok = document.getElementById('medewerker').classList.contains('geldig') && document.getElementById('d_start').classList.contains('geldig');
+        const ok = document.getElementById('medewerker').classList.contains('geldig');
         document.getElementById('sendBtn').disabled = !ok;
     }
 
     function vText(el) { if(el.value.length > 2) el.classList.add('geldig'); else el.classList.remove('geldig'); checkVerzendbaar(); }
 
     function saveData() {
-        const d = { ids: kIds, afstanden: kAfstanden };
+        const d = { ids: kIds, afstanden: kAfstanden, fotos: kPhotos };
         document.querySelectorAll('input, select, textarea').forEach(el => { if(el.id) d[el.id] = el.value; });
-        localStorage.setItem('ve_v115_save', JSON.stringify(d));
+        localStorage.setItem('ve_v116_save', JSON.stringify(d));
     }
 
     function loadData() {
-        const s = localStorage.getItem('ve_v115_save'); if(!s) { voegKlantToe(); return; }
-        const d = JSON.parse(s); kIds = d.ids || []; kAfstanden = d.afstanden || {};
-        kIds.forEach(id => { voegKlantToe(); document.getElementById('dist_'+id).innerText = kAfstanden[id] || "0.0"; });
-        for(let k in d) { let el = document.getElementById(k); if(el) { el.value = d[k]; if(el.id==='medewerker') vText(el); } }
+        const s = localStorage.getItem('ve_v116_save'); if(!s) { voegKlantToe(); return; }
+        const d = JSON.parse(s); kIds = d.ids || []; kAfstanden = d.afstanden || {}; kPhotos = d.fotos || {};
+        kIds.forEach(id => { voegKlantToe(); document.getElementById('dist_'+id).innerText = kAfstanden[id] || "0.0"; renderGallery(id); });
+        for(let k in d) { let el = document.getElementById(k); if(el && el.type !== 'file') el.value = d[k]; }
         rekenen();
     }
 
     function mailen() {
         const nr = document.getElementById('bonNr').innerText;
         const med = document.getElementById('medewerker').value;
-        let b = `WERKBON #${nr}\nMedewerker: ${med}\nDatum: ${document.getElementById('dag_datum').value}\n\n`;
+        let b = `WERKBON #${nr}\nNaam: ${med}\nDatum: ${document.getElementById('dag_datum').value}\n\n`;
         kIds.forEach((id, i) => {
-            b += `KLANT ${i+1}: ${document.getElementById('n_'+id).value}\nWerk: ${document.getElementById('w_'+id).value}\nUren: ${document.getElementById('t_'+id).innerText}\nLaden: ${document.getElementById('ld_'+id).value} ${document.getElementById('ldu_'+id).value}\nAfstand: ${kAfstanden[id]}m\n---\n`;
+            b += `KLANT ${i+1}: ${document.getElementById('n_'+id).value}\nWerk: ${document.getElementById('w_'+id).value}\nUren: ${document.getElementById('t_'+id).innerText}\nAfstand: ${kAfstanden[id]}m\n---\n`;
         });
         localStorage.setItem('last_bon', nr);
         window.location.href = `mailto:vincent@vanelst.nl?subject=Werkbon ${nr} - ${med}&body=${encodeURIComponent(b)}`;
     }
 
+    function clearAll() { if(confirm("Alle velden wissen?")) { localStorage.clear(); location.reload(); } }
     function verwijderK(id) { if(confirm("Klant verwijderen?")) { kIds = kIds.filter(i => i !== id); document.getElementById('c_'+id).remove(); saveData(); } }
 </script>
 </body>
